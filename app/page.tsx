@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-// ★グラフ部品の読み込み
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function Home() {
@@ -62,7 +61,7 @@ export default function Home() {
       case "go": return "bg-green-500";
       case "foul": return "bg-yellow-500";
       case "result": return "bg-blue-500";
-      case "finished": return "bg-slate-900"; // グラフが見やすいようにさらに暗く
+      case "finished": return "bg-slate-900";
       default: return "bg-gray-500";
     }
   };
@@ -85,18 +84,18 @@ export default function Home() {
 
   const stats = getStats();
 
-  // ★グラフ用にデータを整形する（Rechartsはオブジェクトの配列が好きなので）
   const graphData = history.map((time, index) => ({
-    trial: index + 1, // 1回目, 2回目...
-    time: time        // 230ms...
+    trial: index + 1,
+    time: time
   }));
 
   return (
     <main
       onClick={handleTap}
-      className={`flex min-h-screen flex-col items-center justify-center cursor-pointer select-none transition-colors duration-200 ${getBackgroundColor()}`}
+      // relativeを追加して、下の子要素を絶対配置(absolute)できるようにする
+      className={`flex min-h-screen flex-col items-center justify-center p-4 cursor-pointer select-none transition-colors duration-200 relative ${getBackgroundColor()}`}
     >
-      <div className="text-center text-white w-full max-w-md px-4">
+      <div className="text-center text-white w-full max-w-md mb-8 z-10">
         
         {gameState !== "finished" && (
           <p className="absolute top-10 left-0 right-0 text-center text-2xl font-bold opacity-50">
@@ -133,10 +132,12 @@ export default function Home() {
         )}
 
         {gameState === "finished" && (
-          <div className="bg-white text-slate-800 p-6 rounded-2xl shadow-2xl w-full">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white text-slate-800 p-6 rounded-2xl shadow-2xl w-full"
+          >
             <h2 className="text-2xl font-bold mb-4 text-center text-slate-700">測定結果レポート</h2>
             
-            {/* 統計データ */}
             <div className="flex justify-around mb-4 bg-slate-100 p-3 rounded-xl">
               <div className="text-center">
                 <p className="text-xs text-gray-500">平均 (Mean)</p>
@@ -156,7 +157,6 @@ export default function Home() {
               {stats.rating}
             </div>
 
-            {/* ★グラフ表示エリア */}
             <div className="h-48 w-full mb-4">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={graphData}>
@@ -180,12 +180,35 @@ export default function Home() {
               <p className="text-center text-xs text-gray-400 mt-1">グラフの形が平らなほど安定しています</p>
             </div>
 
-            <p className="text-center text-slate-400 text-sm animate-pulse cursor-pointer hover:text-blue-500">
-              画面タップで再テスト
+            <p 
+              onClick={() => { setHistory([]); startGame(); }}
+              className="text-center text-blue-500 text-sm animate-pulse cursor-pointer font-bold hover:underline"
+            >
+              タップして再テスト
             </p>
           </div>
         )}
       </div>
+
+      {/* ▼ 改善点：待機中のみ表示し、画面下に固定 ▼ */}
+      {gameState === "waiting" && (
+        <div 
+          onClick={(e) => e.stopPropagation()} 
+          className="absolute bottom-4 w-full max-w-md p-4 bg-white/90 backdrop-blur rounded-xl shadow-lg text-gray-800 cursor-auto text-sm z-20"
+        >
+          <h2 className="font-bold mb-2">🎮 遊び方 & アプリについて</h2>
+          <ul className="list-disc list-inside space-y-1 mb-2">
+            <li>「待て...」の間は待機。<span className="text-green-600 font-bold">緑色</span>になったらタップ！</li>
+            <li>5回計測で平均とランクを表示します。</li>
+          </ul>
+          <p className="text-xs leading-relaxed text-gray-600 mb-2">
+            光刺激への平均反応時間は約0.2〜0.3秒と言われています。
+          </p>
+          <footer className="pt-2 border-t text-center text-xs text-gray-400">
+            <a href="/privacy" className="underline hover:text-blue-500 transition">プライバシーポリシー</a>
+          </footer>
+        </div>
+      )}
     </main>
   );
 }
