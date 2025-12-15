@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-// ★重要：Next.js用のスクリプト部品を読み込み
+// ★Next.jsでスクリプトを読み込むための部品
 import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
-        {/* ★ここにAdSenseの審査用コードを貼ります */}
+        {/* ★ここにあなたのAdSenseコードを埋め込みました */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8743068387408631"
