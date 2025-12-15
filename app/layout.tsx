@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-// ★Next.jsでスクリプトを読み込むための部品
-import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,13 +17,8 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
-        {/* ★ここにあなたのAdSenseコードを埋め込みました */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8743068387408631"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+        {/* ★ここにAdSense確認用のメタタグを設置 */}
+        <meta name="google-adsense-account" content="ca-pub-8743068387408631" />
       </head>
       <body className={inter.className}>{children}</body>
     </html>
