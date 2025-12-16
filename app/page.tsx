@@ -55,10 +55,12 @@ export default function Home() {
 
       </div>
 
-      <footer className="mt-16 text-gray-400 text-sm">
-        <Link href="/privacy" className="hover:underline">プライバシーポリシー</Link>
-        <span className="mx-4">|</span>
-        &copy; 2025 My Tools Box
+      <footer className="mt-16 text-gray-400 text-sm flex flex-wrap justify-center gap-4">
+        <Link href="/about" className="hover:underline hover:text-gray-600 transition">運営者情報</Link>
+        <span className="hidden md:inline">|</span>
+        <Link href="/privacy" className="hover:underline hover:text-gray-600 transition">プライバシーポリシー</Link>
+        <span className="hidden md:inline">|</span>
+        <span>&copy; 2025 My Tools Box</span>
       </footer>
     </main>
   );
