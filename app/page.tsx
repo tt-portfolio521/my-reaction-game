@@ -52,7 +52,17 @@ export default function Home() {
             <span className="text-indigo-600 font-bold text-sm text-right">計算する →</span>
           </div>
         </Link>
-
+{/* 減価償却シミュレーターへのリンク部分 */}
+<Link href="/depreciation" className="group">
+  <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition duration-300 h-full border border-transparent hover:border-emerald-500 flex flex-col">
+    <div className="text-4xl mb-4">📉</div>
+    <h2 className="text-xl font-bold mb-2 group-hover:text-emerald-600">減価償却計算機</h2>
+    <p className="text-gray-500 text-sm mb-4 flex-grow">
+      定額法・定率法による資産価値の減少をシミュレーション。毎年の償却費と簿価の推移を表とグラフで確認。
+    </p>
+    <span className="text-emerald-600 font-bold text-sm text-right">計算する →</span>
+  </div>
+</Link>
       </div>
 
       <footer className="mt-16 text-gray-400 text-sm flex flex-wrap justify-center gap-4">
