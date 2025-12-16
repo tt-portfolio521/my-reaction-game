@@ -6,8 +6,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function InvestmentSimulator() {
   // 入力値の状態管理
   const [initialAmount, setInitialAmount] = useState(100); // 初期投資額（万円）
-  const [monthlyAmount, setMonthlyAmount] = useState(3);   // 毎月積立額（万円）
-  const [rate, setRate] = useState(5);                     // 年利（%）
+  const [monthlyAmount, setMonthlyAmount] = useState(5);   // 毎月積立額（万円）
+  const [rate, setRate] = useState(7.0);                   // 年利（%）※S&P500等を意識してデフォルトを少し上げました
   const [years, setYears] = useState(20);                  // 運用期間（年）
   const [data, setData] = useState<any[]>([]);
   const [finalAmount, setFinalAmount] = useState(0);
@@ -15,10 +15,9 @@ export default function InvestmentSimulator() {
   // 計算ロジック
   useEffect(() => {
     let currentAmount = initialAmount * 10000;
-    let totalPrincipal = initialAmount * 10000; // 元本合計
+    let totalPrincipal = initialAmount * 10000;
     const newData = [];
 
-    // 0年目のデータ
     newData.push({
       year: 0,
       principal: Math.round(totalPrincipal / 10000),
@@ -27,7 +26,6 @@ export default function InvestmentSimulator() {
     });
 
     for (let i = 1; i <= years; i++) {
-      // 1年分の複利計算（月利計算の簡易版として年利/12を毎月適用）
       for (let m = 0; m < 12; m++) {
         currentAmount = currentAmount * (1 + (rate / 100) / 12) + (monthlyAmount * 10000);
         totalPrincipal += monthlyAmount * 10000;
@@ -35,8 +33,8 @@ export default function InvestmentSimulator() {
 
       newData.push({
         year: i,
-        principal: Math.round(totalPrincipal / 10000), // 元本（万円）
-        interest: Math.round((currentAmount - totalPrincipal) / 10000), // 運用益（万円）
+        principal: Math.round(totalPrincipal / 10000),
+        interest: Math.round((currentAmount - totalPrincipal) / 10000),
         total: Math.round(currentAmount / 10000),
       });
     }
@@ -52,7 +50,7 @@ export default function InvestmentSimulator() {
         {/* ヘッダー */}
         <div className="bg-blue-600 p-6 text-white">
           <h1 className="text-2xl font-bold">📈 資産運用シミュレーター</h1>
-          <p className="text-sm opacity-90">毎月の積立と複利の効果を計算・可視化します</p>
+          <p className="text-sm opacity-90">S&P500やオルカンを想定した積立シミュレーション</p>
         </div>
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -92,6 +90,7 @@ export default function InvestmentSimulator() {
                 onChange={(e) => setRate(Number(e.target.value))}
                 className="w-full mt-2"
               />
+              <p className="text-xs text-gray-400 mt-1">※S&P500の平均は7%〜10%程度</p>
             </div>
             <div>
               <label className="block text-sm font-bold mb-2">運用期間 ({years}年)</label>
@@ -106,7 +105,6 @@ export default function InvestmentSimulator() {
 
           {/* 右側：結果とグラフ */}
           <div className="md:col-span-2 flex flex-col justify-between">
-            {/* 結果サマリー */}
             <div className="mb-6 text-center bg-blue-50 p-4 rounded-xl border border-blue-100">
               <p className="text-sm text-gray-500 mb-1">{years}年後の資産合計</p>
               <p className="text-4xl font-bold text-blue-700">
@@ -114,11 +112,10 @@ export default function InvestmentSimulator() {
                 <span className="text-lg ml-1 text-gray-600">万円</span>
               </p>
               <p className="text-xs text-gray-500 mt-2">
-                (元本: {data[data.length-1]?.principal.toLocaleString()}万円 + 利益: {data[data.length-1]?.interest.toLocaleString()}万円)
+                (元本: {data[data.length-1]?.principal.toLocaleString()}万円 + <span className="text-blue-600 font-bold">利益: {data[data.length-1]?.interest.toLocaleString()}万円</span>)
               </p>
             </div>
 
-            {/* グラフ */}
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -144,7 +141,62 @@ export default function InvestmentSimulator() {
           </div>
         </div>
         
-        <div className="p-4 text-center border-t">
+        {/* ▼▼▼ 追加した解説セクション（S&P500 vs オルカン） ▼▼▼ */}
+        <div className="bg-slate-50 p-8 border-t border-slate-200">
+          <h2 className="text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2">
+            <span className="text-3xl">📊</span> 利回りは何%に設定すべき？
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* S&P500 の解説 */}
+            <section className="bg-white p-6 rounded-xl shadow-sm border-t-4 border-blue-500">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-lg font-bold text-slate-800">🇺🇸 S&P500</h3>
+                <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">米国株式</span>
+              </div>
+              <p className="text-slate-600 text-sm mb-4 leading-relaxed">
+                GoogleやAppleなど、米国の代表的な優良企業500社にまとめて投資する指数です。<br/>
+                過去30年以上の歴史を見ると、非常に高いリターンを記録しています。
+              </p>
+              <div className="bg-slate-50 p-3 rounded-lg">
+                <p className="text-xs text-gray-500 mb-1">過去の平均リターン（円ベース）</p>
+                <p className="text-xl font-bold text-blue-600">約 7% 〜 10%</p>
+                <p className="text-xs text-gray-400 mt-1">※インフレ調整後の実質リターンは7%前後と言われます</p>
+              </div>
+            </section>
+
+            {/* オルカン の解説 */}
+            <section className="bg-white p-6 rounded-xl shadow-sm border-t-4 border-teal-500">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="text-lg font-bold text-slate-800">🌍 全世界株式 (オルカン)</h3>
+                <span className="bg-teal-100 text-teal-800 text-xs font-bold px-2 py-1 rounded">MSCI ACWI</span>
+              </div>
+              <p className="text-slate-600 text-sm mb-4 leading-relaxed">
+                「eMAXIS Slim 全世界株式」などで人気。米国だけでなく、欧州・日本・新興国など世界中に分散投資します。<br/>
+                リスクが分散される分、S&P500よりリターンはややマイルドになる傾向があります。
+              </p>
+              <div className="bg-slate-50 p-3 rounded-lg">
+                <p className="text-xs text-gray-500 mb-1">過去の平均リターン（円ベース）</p>
+                <p className="text-xl font-bold text-teal-600">約 5% 〜 7%</p>
+                <p className="text-xs text-gray-400 mt-1">※より堅実にシミュレーションしたい場合におすすめ</p>
+              </div>
+            </section>
+
+          </div>
+
+          <div className="mt-8 bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+            <p className="text-sm text-yellow-800 font-bold mb-1">💡 複利（ふくり）の力とは？</p>
+            <p className="text-xs text-yellow-700 leading-relaxed">
+              グラフの「青い部分（利益）」が年々急速に膨らんでいくのが分かりますか？<br/>
+              これは「増えた利益が、さらに新しい利益を生む」雪だるま式の効果（複利効果）です。
+              S&P500のようなインデックス投資では、<strong>「時間を味方につける（長く続ける）」</strong>ことが最大の必勝法と言われています。
+            </p>
+          </div>
+        </div>
+        {/* ▲▲▲ 解説セクション終了 ▲▲▲ */}
+
+        <div className="p-4 text-center border-t bg-white">
             <a href="/" className="text-blue-500 hover:underline">← トップページに戻る</a>
         </div>
       </div>
