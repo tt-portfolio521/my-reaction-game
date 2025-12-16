@@ -22,14 +22,14 @@ export default function ReactionGame() {
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // --- 統計モデル定数（一般成人の平均的な反応速度を想定） ---
-  const POPULATION_MEAN = 250; // 平均 250ms
+  // --- 統計モデル定数 ---
+  // 【修正①】平均を350msに変更（より一般的なWeb環境での数値を想定）
+  const POPULATION_MEAN = 350; 
   const POPULATION_SD = 50;    // 標準偏差 50ms
 
   // --- ゲームロジック ---
   const startGame = () => {
     setGameState('ready');
-    // 【修正①】文言を変更
     setMessage("色が変化したらタップ！");
     setScore(null);
 
@@ -71,17 +71,21 @@ export default function ReactionGame() {
   };
 
   // --- 統計計算ロジック ---
+  
+  // 正規分布の確率密度関数 (グラフ描画用)
   const normalPDF = (x: number, mean: number, sd: number) => {
     return (1 / (sd * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / sd, 2));
   };
 
-  const getPercentile = (value: number, mean: number, sd: number) => {
+  // 累積分布関数 (CDF) - 確率変数Xがx以下になる確率 P(X <= x)
+  // つまり「自分より速い（タイムが短い）人が全体の何割か」を計算
+  const getCumulativeProbability = (value: number, mean: number, sd: number) => {
     const z = (value - mean) / sd;
     const t = 1 / (1 + 0.2316419 * Math.abs(z));
     const d = 0.3989423 * Math.exp(-z * z / 2);
     let p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
     if (z > 0) p = 1 - p;
-    return Math.max(0.1, p * 100); 
+    return p; // 0.0 〜 1.0 の範囲
   };
 
   const myAverage = attempts.length > 0 
@@ -92,13 +96,21 @@ export default function ReactionGame() {
     ? Math.sqrt(attempts.map(x => Math.pow(x - myAverage, 2)).reduce((a, b) => a + b, 0) / attempts.length)
     : 0;
 
-  const myRankPercentile = getPercentile(myAverage, POPULATION_MEAN, POPULATION_SD);
+  // 【修正②】ランク表示のロジック変更
+  // p は「自分よりタイムが短い（速い）人の割合」
+  const p = getCumulativeProbability(myAverage, POPULATION_MEAN, POPULATION_SD);
+  
+  // 上位か下位かの判定（p < 0.5 なら平均より速いので「上位」）
+  const isTopRank = p < 0.5;
+  
+  // 表示するパーセンテージ（上位なら p、下位なら 1-p を表示）
+  // 0%や100%にならないように微調整
+  const rankPercent = Math.max(0.1, (isTopRank ? p : 1 - p) * 100);
 
-  // 【修正②】グラフの表示範囲を動的に計算する関数
-  // ユーザーのスコアがグラフ範囲（デフォルト100-400）を飛び出している場合、範囲を拡張する
+  // グラフ範囲の動的計算
   const getGraphDomain = () => {
-    const minX = Math.min(100, myAverage - 100); // 自分のスコア-100ms か 100ms の小さい方
-    const maxX = Math.max(450, myAverage + 100); // 自分のスコア+100ms か 450ms の大きい方
+    const minX = Math.min(150, myAverage - 100); 
+    const maxX = Math.max(550, myAverage + 100); 
     return { minX, maxX };
   };
 
@@ -106,7 +118,6 @@ export default function ReactionGame() {
 
   const generateGraphData = () => {
     const data = [];
-    // 動的に計算した範囲でグラフを描画
     for (let i = minX; i <= maxX; i += 10) {
       data.push({
         ms: i,
@@ -125,7 +136,6 @@ export default function ReactionGame() {
         ${gameState === 'clicked' ? 'bg-slate-800 text-white' : ''}
       `}
       onMouseDown={handleClick}
-      // スマホ対応：タッチイベントも追加
       onTouchStart={handleClick}
     >
       
@@ -154,11 +164,14 @@ export default function ReactionGame() {
             <div className="text-6xl md:text-7xl font-mono font-bold mb-4">{myAverage}<span className="text-3xl ml-2">ms</span></div>
             
             <div className="flex justify-center gap-4 md:gap-8 mt-6">
-              <div className="bg-white/10 px-4 py-3 rounded-xl">
+              <div className="bg-white/10 px-4 py-3 rounded-xl min-w-[160px]">
                 <p className="text-xs opacity-70 mb-1">偏差値ランク</p>
-                <p className="text-lg md:text-xl font-bold text-emerald-400">上位 {myRankPercentile.toFixed(1)} %</p>
+                {/* 【修正】上位・下位を切り替えて表示 */}
+                <p className={`text-lg md:text-xl font-bold ${isTopRank ? 'text-emerald-400' : 'text-orange-400'}`}>
+                  {isTopRank ? '上位' : '下位'} {rankPercent.toFixed(1)} %
+                </p>
               </div>
-              <div className="bg-white/10 px-4 py-3 rounded-xl">
+              <div className="bg-white/10 px-4 py-3 rounded-xl min-w-[160px]">
                 <p className="text-xs opacity-70 mb-1">ばらつき (標準偏差)</p>
                 <p className="text-lg md:text-xl font-bold">±{Math.round(mySD)} ms</p>
               </div>
@@ -174,7 +187,6 @@ export default function ReactionGame() {
               <div className="h-64 w-full border border-slate-100 rounded-xl p-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={generateGraphData()} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
-                    {/* X軸の範囲を動的に設定 */}
                     <XAxis 
                       dataKey="ms" 
                       type="number" 
@@ -186,23 +198,31 @@ export default function ReactionGame() {
                     
                     <Area type="monotone" dataKey="density" stroke="#94a3b8" fill="#e2e8f0" fillOpacity={0.5} name="一般平均" />
                     
-                    <ReferenceLine x={myAverage} stroke="#ef4444" strokeWidth={2} label={{ value: 'あなた', position: 'top', fill: '#ef4444' }} />
-                    <ReferenceDot x={myAverage} y={normalPDF(myAverage, POPULATION_MEAN, POPULATION_SD)} r={6} fill="#ef4444" stroke="white" />
+                    <ReferenceLine x={myAverage} stroke={isTopRank ? "#10b981" : "#f97316"} strokeWidth={2} label={{ value: 'あなた', position: 'top', fill: isTopRank ? "#10b981" : "#f97316" }} />
+                    <ReferenceDot x={myAverage} y={normalPDF(myAverage, POPULATION_MEAN, POPULATION_SD)} r={6} fill={isTopRank ? "#10b981" : "#f97316"} stroke="white" />
                     
-                    <ReferenceLine x={POPULATION_MEAN} stroke="#94a3b8" strokeDasharray="3 3" label={{ value: '一般平均', position: 'top', fill: '#94a3b8', fontSize: 12 }} />
+                    <ReferenceLine x={POPULATION_MEAN} stroke="#94a3b8" strokeDasharray="3 3" label={{ value: '平均', position: 'top', fill: '#94a3b8', fontSize: 12 }} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
               <p className="text-xs text-slate-500 mt-2 text-center">
-                ※左に行くほど（タイムが短いほど）優秀です。
+                ※平均{POPULATION_MEAN}ms、標準偏差{POPULATION_SD}msの分布を想定。<br/>
+                左に行くほど（タイムが短いほど）速いです。
               </p>
             </div>
 
             <div className="space-y-6">
-              <div className="bg-emerald-50 p-5 rounded-xl border border-emerald-100">
-                <h4 className="font-bold text-emerald-800 mb-2">🏆 上位 {myRankPercentile.toFixed(1)}% とは？</h4>
+              {/* 【修正】ランクに応じた解説文 */}
+              <div className={`p-5 rounded-xl border ${isTopRank ? 'bg-emerald-50 border-emerald-100' : 'bg-orange-50 border-orange-100'}`}>
+                <h4 className={`font-bold mb-2 ${isTopRank ? 'text-emerald-800' : 'text-orange-800'}`}>
+                  {isTopRank ? '🏆 素晴らしい反応速度です！' : '🐢 もっと速くなれるはず！'}
+                </h4>
                 <p className="text-sm text-slate-700 leading-relaxed">
-                  もし100人の人がこのテストを受けたら、あなたは <span className="font-bold underline">{Math.ceil(myRankPercentile)}番目</span> くらいの順位になります。
+                  もし100人の人がこのテストを受けたら、あなたは
+                  <span className="font-bold underline mx-1">
+                    {isTopRank ? '速い方' : '遅い方'}から数えて {Math.ceil(rankPercent)}番目
+                  </span>
+                  くらいの順位になります。
                 </p>
               </div>
 
