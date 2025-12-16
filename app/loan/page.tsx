@@ -16,26 +16,22 @@ export default function LoanSimulator() {
 
   // 計算ロジック（元利均等返済）
   useEffect(() => {
-    // 単位を「円」に変換して計算
     const principal = amount * 10000;
     const monthlyRate = (rate / 100) / 12;
     const numPayments = years * 12;
 
     let pmt = 0;
     
-    // 金利が0%の場合の対応
     if (rate === 0) {
       pmt = principal / numPayments;
     } else {
       pmt = (principal * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
     }
 
-    // 各月の内訳を計算
     let balance = principal;
     let currentTotalInterest = 0;
     const newData = [];
 
-    // グラフ用データ（年単位で集計して間引く）
     for (let i = 1; i <= numPayments; i++) {
       const interestPart = balance * monthlyRate;
       const principalPart = pmt - interestPart;
@@ -43,13 +39,13 @@ export default function LoanSimulator() {
       balance -= principalPart;
       currentTotalInterest += interestPart;
 
-      // 1年ごと（12ヶ月目）にデータを記録（グラフが見やすくなるように）
+      // グラフ用データ（1年ごとに集計して表示）
       if (i % 12 === 0 || i === 1) {
         newData.push({
           year: Math.ceil(i / 12),
-          principalPayment: Math.round(principalPart), // その月の元金返済分
-          interestPayment: Math.round(interestPart),   // その月の利息支払い分
-          balance: Math.round(balance / 10000),        // 残高（万円）
+          principalPayment: Math.round(principalPart), 
+          interestPayment: Math.round(interestPart),
+          balance: Math.round(balance / 10000),
         });
       }
     }
@@ -119,7 +115,6 @@ export default function LoanSimulator() {
 
           {/* 右側：結果とグラフ */}
           <div className="md:col-span-2 flex flex-col justify-between">
-            {/* 結果サマリー */}
             <div className="mb-6 grid grid-cols-2 gap-4">
               <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-center">
                 <p className="text-xs text-gray-500 mb-1">毎月の返済額</p>
@@ -138,9 +133,8 @@ export default function LoanSimulator() {
               </div>
             </div>
 
-            {/* グラフ：返済内訳の推移 */}
             <div className="h-64 w-full">
-              <p className="text-center text-xs text-gray-500 mb-2">毎月の返済内訳の推移（積み上げグラフ）</p>
+              <p className="text-center text-xs text-gray-500 mb-2">返済内訳の推移（積み上げグラフ）</p>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={graphData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
@@ -163,12 +157,57 @@ export default function LoanSimulator() {
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-xs text-gray-400 mt-2 text-center">※ ボーナス払いなし、元利均等返済方式での概算です。</p>
+            <p className="text-xs text-gray-400 mt-2 text-center">※ グラフのオレンジ色が「利息」です。最初は利息の割合が多いことが分かります。</p>
           </div>
         </div>
         
-        <div className="p-4 text-center border-t">
-            <a href="/" className="text-indigo-500 hover:underline">← トップページに戻る</a>
+        {/* ▼▼▼ 追加した解説セクション ▼▼▼ */}
+        <div className="bg-slate-50 p-8 border-t border-slate-200">
+          <h2 className="text-2xl font-bold mb-8 text-slate-800 flex items-center gap-2">
+            <span className="text-3xl">💡</span> ローン返済の仕組み
+          </h2>
+          
+          <div className="space-y-8">
+            <section className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-indigo-500">
+              <h3 className="text-lg font-bold text-indigo-800 mb-3">元利均等返済（がんりきんとう）とは？</h3>
+              <p className="text-slate-600 leading-relaxed text-sm">
+                このシミュレーターで採用している方式です。
+                <strong>「毎月の支払額がずっと一定」</strong>になるように計算されています。<br/><br/>
+                メリットは「毎月の家計管理が楽」なことですが、
+                デメリットは「最初は支払額のほとんどが利息で、なかなか元金（借金そのもの）が減らない」ことです。
+                上のグラフでオレンジ色（利息）が最初の方に多いのはそのためです。
+              </p>
+            </section>
+
+            <section className="bg-white p-6 rounded-xl shadow-sm">
+              <h3 className="text-lg font-bold text-slate-800 mb-3">金利1%の違いによる衝撃</h3>
+              <p className="text-slate-600 leading-relaxed text-sm mb-4">
+                住宅ローンのような長期返済では、わずか数％の金利差が数百万円の違いになります。
+                例えば「3000万円・35年返済」の場合を比較してみましょう。
+              </p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg text-center">
+                  <p className="text-xs text-gray-500 mb-1">金利 1.5% の場合</p>
+                  <p className="font-bold text-blue-700">総支払額：約 3,858万円</p>
+                  <p className="text-xs text-gray-400">(利息 858万円)</p>
+                </div>
+                <div className="bg-orange-50 p-4 rounded-lg text-center">
+                  <p className="text-xs text-gray-500 mb-1">金利 2.5% の場合</p>
+                  <p className="font-bold text-orange-700">総支払額：約 4,510万円</p>
+                  <p className="text-xs text-gray-400">(利息 1,510万円)</p>
+                </div>
+              </div>
+              <p className="text-xs text-right text-gray-500 mt-2">
+                差額：なんと <span className="font-bold text-red-500 text-sm">約650万円</span> も変わります！
+              </p>
+            </section>
+          </div>
+        </div>
+        {/* ▲▲▲ 解説セクション終了 ▲▲▲ */}
+
+        <div className="p-4 text-center border-t bg-white">
+            <a href="/" className="text-indigo-500 hover:underline font-bold">← トップページに戻る</a>
         </div>
       </div>
     </main>
