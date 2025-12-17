@@ -5,8 +5,11 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "反射神経測定ゲーム",
-  description: "あなたの反応速度を計測・分析します",
+  title: {
+    template: '%s | My Tools Box', // ページごとのタイトルの後ろに "| My Tools Box" を自動でつける
+    default: 'My Tools Box | 計算・シミュレーションツール集', // タイトルがないページのデフォルト
+  },
+  description: '生活、学習、ビジネスに役立つ計算ツール・シミュレーター集。人間工学や会計の知識に基づき、データを分かりやすく可視化します。',
 };
 
 export default function RootLayout({
