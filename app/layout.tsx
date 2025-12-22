@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+// 1. GoogleAnalytics をインポート
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,10 +22,14 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
-        {/* ★ここにAdSense確認用のメタタグを設置 */}
+        {/* AdSense確認用のメタタグを維持 */}
         <meta name="google-adsense-account" content="ca-pub-8743068387408631" />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {children}
+        {/* 2. Googleアナリティクスを導入（画像で確認したIDを使用） */}
+        <GoogleAnalytics gaId="G-7VXZ35NVDC" />
+      </body>
     </html>
   );
 }
