@@ -1,36 +1,36 @@
-// app/blog/[slug]/page.tsx
-
-// ★修正ポイント：ドット2つで「一つ上の階層」を指定
-import { posts } from "../posts"; 
+import { posts } from "../posts";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Metadata } from 'next';
 
+// ★変更点1：paramsを Promise（待機するもの）として定義
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
+// メタデータ生成部分も修正
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = posts.find((p) => p.slug === params.slug);
+  const { slug } = await params; // ★変更点2：awaitで中身を取り出す
+  const post = posts.find((p) => p.slug === slug);
   if (!post) return { title: '記事が見つかりません' };
+  
   return {
     title: post.title,
     description: `${post.category}に関する解説記事です。`,
   };
 }
 
-export default function BlogPost({ params }: Props) {
-  // slugが正しく受け取れているか確認（後で消してOK）
-  console.log("Requested slug:", params.slug);
+// 記事ページ本体
+export default async function BlogPost({ params }: Props) {
+  const { slug } = await params; // ★変更点3：ここでもawaitする
 
-  const post = posts.find((p) => p.slug === params.slug);
+  const post = posts.find((p) => p.slug === slug);
 
-  // 記事がない場合の表示（404ページに飛ばさず、画面に出す）
+  // 記事がない場合の表示
   if (!post) {
     return (
       <div className="p-10 text-center">
         <h1 className="text-2xl font-bold text-red-500 mb-4">記事が見つかりません😭</h1>
-        <p>探しているID: {params.slug}</p>
+        <p>探しているID: {slug}</p>
         <p className="mt-4">
           <Link href="/blog" className="text-blue-500 underline">一覧に戻る</Link>
         </p>
