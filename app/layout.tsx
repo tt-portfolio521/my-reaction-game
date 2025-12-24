@@ -24,6 +24,8 @@ export default function RootLayout({
       <head>
         {/* AdSense確認用のメタタグを維持 */}
         <meta name="google-adsense-account" content="ca-pub-8743068387408631" />
+
+        <meta name="google-site-verification" content="whoIkah3tDL9lZaSdTviSzmc1evNYOPCxBKtLLcM_-I" />
       </head>
       <body className={inter.className}>
         {children}
