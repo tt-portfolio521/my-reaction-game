@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import AdUnit from "../../components/AdUnit";
 
 export default function InvestmentSimulator() {
   // 入力値の状態管理
@@ -195,7 +196,8 @@ export default function InvestmentSimulator() {
           </div>
         </div>
         {/* ▲▲▲ 解説セクション終了 ▲▲▲ */}
-
+        {/* ▼▼▼ ここに広告部品を配置 ▼▼▼ */}
+        <div className="mt-8"></div>
         <div className="p-4 text-center border-t bg-white">
             <a href="/" className="text-blue-500 hover:underline">← トップページに戻る</a>
         </div>
