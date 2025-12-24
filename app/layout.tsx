@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 // 1. GoogleAnalytics をインポート
 import { GoogleAnalytics } from '@next/third-parties/google';
+// ▼▼▼ Navbarをインポート（追加部分） ▼▼▼
+import Navbar from "@/components/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,11 +27,16 @@ export default function RootLayout({
         {/* AdSense確認用のメタタグを維持 */}
         <meta name="google-adsense-account" content="ca-pub-8743068387408631" />
 
+        {/* サーチコンソール確認用タグ */}
         <meta name="google-site-verification" content="whoIkah3tDL9lZaSdTviSzmc1evNYOPCxBKtLLcM_-I" />
       </head>
       <body className={inter.className}>
+        {/* ▼▼▼ Navbarをここに配置（全ページ共通で一番上に表示） ▼▼▼ */}
+        <Navbar />
+
         {children}
-        {/* 2. Googleアナリティクスを導入（画像で確認したIDを使用） */}
+
+        {/* 2. Googleアナリティクスを導入（維持） */}
         <GoogleAnalytics gaId="G-7VXZ35NVDC" />
       </body>
     </html>
