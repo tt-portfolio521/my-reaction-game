@@ -84,7 +84,62 @@ export const posts: Post[] = [
         <li><strong>売却時</strong>：期首から売却した月まで（例：7月末売却なら 4/12ヶ月）</li>
       </ul>
       <p>この計算は、実はプログラミングのロジックや統計の計算にも通じる「期間配分」の考え方です。指折り数えるのではなく、「決算月 － 取得月 ＋ 1」といった自分なりの計算式を確立しましょう。</p>
+<h2 class="text-2xl font-bold mt-8 mb-4">3. 実践：数値で見る「定額法 vs 定率法」</h2>
+      <p>以下の条件で、1年目と2年目の減価償却費がどう変わるかシミュレーションしてみましょう。</p>
+      
+      <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 my-4">
+        <ul class="space-y-1 text-sm">
+          <li><strong>取得原価</strong>：1,000,000円</li>
+          <li><strong>取得日</strong>：10月1日（決算は3月31日）</li>
+          <li><strong>耐用年数</strong>：5年</li>
+          <li><strong>償却率</strong>：定額法 0.200 / 定率法 0.400</li>
+        </ul>
+      </div>
 
+      <h3 class="text-lg font-bold mt-6 mb-2">【1年目】月割計算の適用（6ヶ月分）</h3>
+      <p>10月から3月までの6ヶ月分のみを計上します。</p>
+      <ul class="list-disc list-inside space-y-2 ml-4 text-sm">
+        <li><strong>定額法</strong>：1,000,000 × 0.200 × <strong>6/12</strong> ＝ <span class="font-bold text-blue-600">100,000円</span></li>
+        <li><strong>定率法</strong>：1,000,000 × 0.400 × <strong>6/12</strong> ＝ <span class="font-bold text-blue-600">200,000円</span></li>
+      </ul>
+
+      <h3 class="text-lg font-bold mt-6 mb-2">【2年目】「未償却残高」に注意</h3>
+      <p>2年目は1年間フルで使用しますが、定率法は「1年目に引いた分」を除外して計算します。</p>
+      <ul class="list-disc list-inside space-y-2 ml-4 text-sm">
+        <li><strong>定額法</strong>：1,000,000 × 0.200 ＝ <span class="font-bold text-blue-600">200,000円</span></li>
+        <li><strong>定率法</strong>：(1,000,000 － <span class="text-red-500 font-bold">200,000</span>) × 0.400 ＝ <span class="font-bold text-blue-600">320,000円</span></li>
+      </ul>
+
+      <div class="overflow-x-auto my-6">
+        <table class="w-full text-sm text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-100">
+              <th class="border p-2">計算方法</th>
+              <th class="border p-2">1年目費用</th>
+              <th class="border p-2">2年目費用</th>
+              <th class="border p-2">2年目末の帳簿価額</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border p-2 font-bold">定額法</td>
+              <td class="border p-2">100,000</td>
+              <td class="border p-2">200,000</td>
+              <td class="border p-2">700,000</td>
+            </tr>
+            <tr>
+              <td class="border p-2 font-bold">定率法</td>
+              <td class="border p-2">200,000</td>
+              <td class="border p-2">320,000</td>
+              <td class="border p-2">480,000</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-sm text-slate-600 italic">
+        ※定率法の方が、初期に大きく費用化されていることがわかります。これが「収益との対応」を考えた会計のロジックです。
+      </p>
       <h2 class="text-2xl font-bold mt-8 mb-4">3. 税効果会計への繋がり</h2>
       <p>2級の範囲である「税効果会計」においても、減価償却の「会計上の費用」と「税務上の損金」のズレが論点になります。一見別物に見える論点も、<strong>「資産の価値をいつ認識するか」</strong>という一点で繋がっています。</p>
       <p>これらを体系的に理解することで、暗記に頼らずに試験現場で解法を導き出せるようになります。</p>
