@@ -1,39 +1,48 @@
-import { posts } from "../posts"; // 先ほどのデータファイルを読み込み
+// app/blog/[slug]/page.tsx
+
+// ★修正ポイント：ドット2つで「一つ上の階層」を指定
+import { posts } from "../posts"; 
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from 'next';
 
-// URLのパラメータを受け取る型定義
 type Props = {
   params: { slug: string };
 };
 
-// メタデータ（タイトルなど）を動的に生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = posts.find((p) => p.slug === params.slug);
   if (!post) return { title: '記事が見つかりません' };
-  
   return {
     title: post.title,
     description: `${post.category}に関する解説記事です。`,
   };
 }
 
-// 記事ページ本体
 export default function BlogPost({ params }: Props) {
-  // URLの slug と一致する記事を探す
+  // slugが正しく受け取れているか確認（後で消してOK）
+  console.log("Requested slug:", params.slug);
+
   const post = posts.find((p) => p.slug === params.slug);
 
-  // 記事がなければ 404 ページへ
+  // 記事がない場合の表示（404ページに飛ばさず、画面に出す）
   if (!post) {
-    notFound();
+    return (
+      <div className="p-10 text-center">
+        <h1 className="text-2xl font-bold text-red-500 mb-4">記事が見つかりません😭</h1>
+        <p>探しているID: {params.slug}</p>
+        <p className="mt-4">
+          <Link href="/blog" className="text-blue-500 underline">一覧に戻る</Link>
+        </p>
+      </div>
+    );
   }
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 md:p-12 font-sans text-slate-800">
       <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
         
-        {/* 記事ヘッダー */}
+        {/* ヘッダー */}
         <div className="bg-slate-900 text-white p-8 md:p-12 text-center relative overflow-hidden">
           <div className="absolute top-[-20%] left-[-10%] text-9xl opacity-10 select-none">
             {post.emoji}
@@ -51,9 +60,8 @@ export default function BlogPost({ params }: Props) {
           </div>
         </div>
 
-        {/* 記事本文 */}
+        {/* 本文 */}
         <div className="p-8 md:p-12 leading-8 text-slate-700">
-          {/* HTML文字列を安全に表示するためのReactの機能 */}
           <div 
             dangerouslySetInnerHTML={{ __html: post.content }} 
             className="space-y-6"
