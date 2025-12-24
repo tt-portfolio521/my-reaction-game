@@ -140,10 +140,7 @@ export const posts: Post[] = [
       <p class="text-sm text-slate-600 italic">
         ※定率法の方が、初期に大きく費用化されていることがわかります。これが「収益との対応」を考えた会計のロジックです。
       </p>
-      <h2 class="text-2xl font-bold mt-8 mb-4">3. 税効果会計への繋がり</h2>
-      <p>2級の範囲である「税効果会計」においても、減価償却の「会計上の費用」と「税務上の損金」のズレが論点になります。一見別物に見える論点も、<strong>「資産の価値をいつ認識するか」</strong>という一点で繋がっています。</p>
-      <p>これらを体系的に理解することで、暗記に頼らずに試験現場で解法を導き出せるようになります。</p>
-
+      
       <div class="mt-12 bg-slate-900 text-white p-8 rounded-2xl text-center">
         <h3 className="text-xl font-bold mb-4">実際の数値でシミュレーションしてみよう</h3>
         <p className="text-slate-400 mb-6 text-sm">
