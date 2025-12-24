@@ -59,6 +59,49 @@ export const posts: Post[] = [
     `,
   },
   {
+    slug: "boki2-depreciation-logic",
+    title: "【簿記2級】減価償却は「暗記」不要？計算ロジックを整理してミスを防ぐ方法",
+    date: "2025-12-24", // 今日の日付
+    emoji: "🧮",
+    category: "会計・簿記",
+    content: `
+      <p>簿記2級の商業簿記において、多くの受験生が苦手意識を持つのが「減価償却」です。特に定率法の計算や、年度の途中で資産を取得・売却した際の月割計算は、ケアレスミスが起きやすいポイントです。</p>
+      <p>今回は、簿記2級を取得している筆者の視点から、減価償却を「数式」ではなく「価値の消費」というロジックで捉える覚え方を解説します。</p>
+
+      <h2 class="text-2xl font-bold mt-8 mb-4">1. なぜ「定率法」は複雑に感じるのか</h2>
+      <p>定額法が「毎年同じ額」を引くだけなのに対し、定率法は「未償却残高（帳簿価額）」に一定の率をかけます。このロジックの根底にあるのは、<strong>「資産は使い始めほど収益に貢献し、価値の減り方も大きい」</strong>という考え方です。</p>
+      
+      <div class="bg-blue-50 p-4 rounded-lg my-6">
+        <p class="font-bold text-blue-800">💡 ミスを防ぐ計算の型</p>
+        <p class="text-sm mt-2">（取得原価 － <strong>減価償却累計額</strong>）× 償却率 ＝ 当期純利益</p>
+        <p class="text-xs text-slate-500 mt-1">※この「累計額を引く」作業を忘れるのが定率法の最大の不合格パターンです。</p>
+      </div>
+
+      <h2 class="text-2xl font-bold mt-8 mb-4">2. 難関：年度途中の「月割計算」の攻略</h2>
+      <p>簿記2級では、4月1日以外に購入・売却するケースが標準です。ここで重要なのは、<strong>「タイムライン（時間軸）を脳内に描く」</strong>ことです。</p>
+      <ul class="list-disc list-inside space-y-2 ml-4 my-4">
+        <li><strong>取得時</strong>：使った月から決算月まで（例：10月取得なら 6/12ヶ月）</li>
+        <li><strong>売却時</strong>：期首から売却した月まで（例：7月末売却なら 4/12ヶ月）</li>
+      </ul>
+      <p>この計算は、実はプログラミングのロジックや統計の計算にも通じる「期間配分」の考え方です。指折り数えるのではなく、「決算月 － 取得月 ＋ 1」といった自分なりの計算式を確立しましょう。</p>
+
+      <h2 class="text-2xl font-bold mt-8 mb-4">3. 税効果会計への繋がり</h2>
+      <p>2級の範囲である「税効果会計」においても、減価償却の「会計上の費用」と「税務上の損金」のズレが論点になります。一見別物に見える論点も、<strong>「資産の価値をいつ認識するか」</strong>という一点で繋がっています。</p>
+      <p>これらを体系的に理解することで、暗記に頼らずに試験現場で解法を導き出せるようになります。</p>
+
+      <div class="mt-12 bg-slate-900 text-white p-8 rounded-2xl text-center">
+        <h3 className="text-xl font-bold mb-4">実際の数値でシミュレーションしてみよう</h3>
+        <p className="text-slate-400 mb-6 text-sm">
+          定額法と定率法で、数年後の帳簿価額にどれくらいの差が出るか知っていますか？<br>
+          自作の計算機で、グラフを使って視覚的に確認してみてください。
+        </p>
+        <a href="/depreciation" class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-full transition transform hover:scale-105">
+          減価償却シミュレーターを使う 📉
+        </a>
+      </div>
+    `,
+  },
+  {
     slug: "investment-logic",
     title: "【資産運用】S&P500の30年後をどう予測する？モンテカルロ法ではないシンプルな計算ロジック",
     date: "2025-01-20",
