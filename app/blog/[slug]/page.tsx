@@ -1,7 +1,6 @@
 import { posts } from "../posts"; // 先ほどのデータファイルを読み込み
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
 import { Metadata } from 'next';
 
 // URLのパラメータを受け取る型定義
