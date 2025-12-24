@@ -20,6 +20,7 @@ export default function Home() {
         </p>
       </header>
 
+      {/* ツール一覧エリア */}
       <div className="max-w-6xl w-full space-y-16">
 
         {/* カテゴリ1：お金・会計・ビジネス */}
@@ -103,6 +104,32 @@ export default function Home() {
         </section>
 
       </div>
+
+      {/* ▼▼▼ Tech Labへの誘導バナー (ここに追加しました！) ▼▼▼ */}
+      <div className="mt-24 w-full max-w-4xl px-4">
+        <div className="bg-slate-900 text-white p-10 rounded-3xl shadow-xl relative overflow-hidden group text-center">
+          
+          {/* 背景の装飾（ぼんやり光る青い丸） */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20 translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+
+          <div className="relative z-10">
+            <h2 className="text-3xl font-bold mb-4 flex justify-center items-center gap-2">
+              Tech Lab <span className="text-2xl">🧪</span>
+            </h2>
+            <p className="text-slate-300 mb-8 max-w-lg mx-auto leading-relaxed">
+              ツールの裏側にある「計算ロジック」や、Next.jsを用いた「開発技術」を解説するブログエリアを開設しました。
+            </p>
+            
+            <Link 
+              href="/blog" 
+              className="inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full transition-all transform group-hover:scale-105 shadow-lg hover:shadow-blue-500/50"
+            >
+              記事一覧を見る →
+            </Link>
+          </div>
+        </div>
+      </div>
+      {/* ▲▲▲ 追加終わり ▲▲▲ */}
 
       <footer className="mt-20 text-slate-400 text-sm flex flex-wrap justify-center gap-6 pb-8">
         <Link href="/about" className="hover:text-slate-600 transition">運営者情報</Link>
