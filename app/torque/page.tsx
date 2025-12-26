@@ -9,8 +9,13 @@ export default function TorqueVisualizer() {
   const [angle, setAngle] = useState(180);
 
   // --- 定数設定 ---
-  const MUSCLE_FORCE = 500; // 筋肉の力 (N) - 今回は一定
+  const MUSCLE_FORCE = 500; // 筋肉の力 (N)
   const INSERTION_DISTANCE = 0.05;
+  
+  // 【追加】視覚化用のスケール設定
+  const TORQUE_SCALE = 4; // トルク(Nm)をピクセル長さに変換する係数
+  const MIN_ARROW_LENGTH = 20; // 矢印の最小長さ(px)
+  const MAX_ARROW_LENGTH = 100; // 矢印の最大長さ(px)
 
   // --- 計算ロジック ---
   const radian = (angle * Math.PI) / 180;
@@ -24,15 +29,13 @@ export default function TorqueVisualizer() {
   const elbowY = svgHeight * 0.45;
   const armLength = 120;
 
-  // 前腕の先端座標
   const forearmEndX = elbowX + armLength * Math.sin(radian);
   const forearmEndY = elbowY - armLength * Math.cos(radian);
 
-  // 筋肉の付着点（上腕側・固定）
   const muscleOriginX = elbowX;
   const muscleOriginY = elbowY - 100;
   
-  // 筋肉の付着点（前腕側・可動）= 力の作用点
+  // 力の作用点（筋肉の前腕付着部）
   const insertionRatio = 0.3;
   const muscleInsertionX = elbowX + (armLength * insertionRatio) * Math.sin(radian);
   const muscleInsertionY = elbowY - (armLength * insertionRatio) * Math.cos(radian);
@@ -41,15 +44,19 @@ export default function TorqueVisualizer() {
   const momentArmEndX = muscleInsertionX - (momentArm * 150 * Math.cos(radian));
   const momentArmEndY = muscleInsertionY - (momentArm * 150 * Math.sin(radian));
 
-  // --- 【追加】力のベクトル（矢印）の計算 ---
-  const arrowLength = 60; // 矢印の長さ（力の大きさを視覚的に表現）
-  // 筋肉の方向ベクトル（前腕付着点 → 上腕付着点）
+  // --- 力のベクトル（矢印）の計算 ---
+  // 【変更点1】トルクの大きさに応じて矢印の長さを計算（最小・最大値で制限）
+  const calculatedArrowLength = torque * TORQUE_SCALE;
+  const arrowLength = Math.min(Math.max(calculatedArrowLength, MIN_ARROW_LENGTH), MAX_ARROW_LENGTH);
+
+  // 筋肉の方向ベクトル（単位ベクトル）
   const dx = muscleOriginX - muscleInsertionX;
   const dy = muscleOriginY - muscleInsertionY;
   const length = Math.sqrt(dx * dx + dy * dy);
-  // 単位ベクトル化して矢印の長さを掛ける
   const unitX = dx / length;
   const unitY = dy / length;
+
+  // 矢印の終点座標
   const arrowEndX = muscleInsertionX + unitX * arrowLength;
   const arrowEndY = muscleInsertionY + unitY * arrowLength;
 
@@ -64,53 +71,42 @@ export default function TorqueVisualizer() {
         {/* アニメーション表示エリア */}
         <div className="relative bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
           <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
-            {/* 矢印の先端を定義 */}
             <defs>
-              <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                <polygon points="0 0, 10 3.5, 0 7" fill="#dc2626" />
+              {/* 【変更点2】矢印の先端サイズを小さく調整 */}
+              <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+                <polygon points="0 0, 6 2, 0 4" fill="#dc2626" />
               </marker>
             </defs>
 
-            {/* 上腕骨（固定） */}
+            {/* 上腕骨・前腕骨・関節・筋肉本体（変更なし） */}
             <line x1={elbowX} y1={elbowY} x2={elbowX} y2={elbowY - 140} stroke="#cbd5e1" strokeWidth="14" strokeLinecap="round" />
-            
-            {/* 前腕骨（可動） */}
             <motion.line
               x1={elbowX} y1={elbowY}
               x2={forearmEndX} y2={forearmEndY}
               stroke="#64748b" strokeWidth="14" strokeLinecap="round"
               animate={{ x2: forearmEndX, y2: forearmEndY }}
             />
-
-            {/* 関節（肘） */}
             <circle cx={elbowX} cy={elbowY} r="10" fill="#94a3b8" />
-
-            {/* 筋肉本体（薄い赤色で表現） */}
             <motion.line
               x1={muscleOriginX} y1={muscleOriginY}
               x2={muscleInsertionX} y2={muscleInsertionY}
-              stroke="#fca5a5" strokeWidth="10" strokeLinecap="round" // 色を薄く変更
+              stroke="#fca5a5" strokeWidth="10" strokeLinecap="round"
               animate={{ x2: muscleInsertionX, y2: muscleInsertionY }}
             />
 
-            {/* 【追加】力のベクトル（鮮明な赤い矢印） */}
+            {/* 力のベクトル（鮮明な赤い矢印） */}
             <motion.line
               x1={muscleInsertionX} y1={muscleInsertionY}
               x2={arrowEndX} y2={arrowEndY}
-              stroke="#dc2626" strokeWidth="4" // 鮮明な赤、少し細く
-              markerEnd="url(#arrowhead)" // 先端に矢印をつける
+              stroke="#dc2626" strokeWidth="4"
+              markerEnd="url(#arrowhead)"
+              // 始点と終点の両方をアニメーションさせることで長さの変化を表現
               animate={{ x1: muscleInsertionX, y1: muscleInsertionY, x2: arrowEndX, y2: arrowEndY }}
+              // スムーズな伸縮のためのトランジション設定
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
             />
-            {/* 力のラベル */}
-            <motion.text
-              x={arrowEndX + 5} y={arrowEndY}
-              className="text-xs fill-red-600 font-bold"
-              animate={{ x: arrowEndX + 5, y: arrowEndY }}
-            >
-              力 F
-            </motion.text>
 
-            {/* モーメントアーム(d)の可視化 */}
+            {/* モーメントアーム(d)の可視化（変更なし） */}
             {angle < 178 && angle > 2 && (
               <>
                 <motion.line
@@ -150,7 +146,7 @@ export default function TorqueVisualizer() {
           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-3">
             <div className="flex justify-between items-center text-sm">
               <span className="text-slate-600">筋肉の力 ($F$)</span>
-              <span className="font-mono font-bold text-red-600">500 N (一定)</span>
+              <span className="font-mono font-bold text-slate-800">500 N (一定)</span>
             </div>
             <div className="flex justify-between items-center text-sm bg-blue-50 p-2 rounded-lg -mx-2">
               <span className="text-blue-800 font-bold">✕ モーメントアーム ($d$)</span>
@@ -161,7 +157,7 @@ export default function TorqueVisualizer() {
             <div className="border-t border-slate-300 my-2"></div>
             <div className="flex justify-between items-center">
               <span className="text-lg font-bold text-slate-800">＝ 発揮トルク ($\tau$)</span>
-              <span className="text-2xl font-mono font-extrabold text-slate-800">
+              <span className="text-2xl font-mono font-extrabold text-red-600">
                 {torque.toFixed(1)} <span className="text-sm">Nm</span>
               </span>
             </div>
@@ -169,7 +165,7 @@ export default function TorqueVisualizer() {
 
           <p className="text-sm text-slate-600 leading-relaxed bg-blue-50/50 p-3 rounded-lg border border-blue-100">
             <strong>専門解説:</strong><br/>
-            赤い矢印が筋肉の「力($F$)」の向きを表しています。この力は一定でも、角度によって「モーメントアーム($d$)」が変わるため、最終的な「トルク($\tau$)」が変化する様子が確認できます。
+            赤い矢印の長さは、発揮される「トルク（回転力）」の大きさを表しています。90度付近で最も矢印が長くなり、180度や15度付近では短くなる様子から、角度による力の伝達効率の違いが直感的に理解できます。
           </p>
         </div>
       </div>
