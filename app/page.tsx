@@ -99,6 +99,12 @@ export default function Home() {
                 <span className="text-amber-600 font-bold text-sm text-right">計測する →</span>
               </div>
             </Link>
+            {/* ツールカードの例 */}
+<Link href="/torque" className="group p-6 bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition">
+  <div className="text-3xl mb-4">💪</div>
+  <h3 className="font-bold text-lg mb-2">関節トルク・シミュレーター</h3>
+  <p className="text-sm text-slate-500">角度による発揮力の変化をバイオメカニクスの視点で見える化します。</p>
+</Link>
 
           </div>
         </section>
