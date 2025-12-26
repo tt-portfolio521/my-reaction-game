@@ -1,15 +1,18 @@
 import { posts } from "../posts";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Metadata } from 'next';
+// 作成した部品を読み込む
+// ドット3つでフォルダを遡って components を見に行く書き方
+import MathRenderer from "../../../components/MathRenderer";
 
-// ★変更点1：paramsを Promise（待機するもの）として定義
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-// メタデータ生成部分も修正
+// メタデータ生成（サーバー側で実行される）
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params; // ★変更点2：awaitで中身を取り出す
+  const { slug } = await params;
   const post = posts.find((p) => p.slug === slug);
   if (!post) return { title: '記事が見つかりません' };
   
@@ -21,28 +24,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // 記事ページ本体
 export default async function BlogPost({ params }: Props) {
-  const { slug } = await params; // ★変更点3：ここでもawaitする
-
+  const { slug } = await params;
   const post = posts.find((p) => p.slug === slug);
 
-  // 記事がない場合の表示
   if (!post) {
-    return (
-      <div className="p-10 text-center">
-        <h1 className="text-2xl font-bold text-red-500 mb-4">記事が見つかりません😭</h1>
-        <p>探しているID: {slug}</p>
-        <p className="mt-4">
-          <Link href="/blog" className="text-blue-500 underline">一覧に戻る</Link>
-        </p>
-      </div>
-    );
+    notFound();
   }
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 md:p-12 font-sans text-slate-800">
       <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
         
-        {/* ヘッダー */}
+        {/* 記事ヘッダー */}
         <div className="bg-slate-900 text-white p-8 md:p-12 text-center relative overflow-hidden">
           <div className="absolute top-[-20%] left-[-10%] text-9xl opacity-10 select-none">
             {post.emoji}
@@ -60,12 +53,9 @@ export default async function BlogPost({ params }: Props) {
           </div>
         </div>
 
-        {/* 本文 */}
+        {/* 記事本文（MathRendererを使って表示） */}
         <div className="p-8 md:p-12 leading-8 text-slate-700">
-          <div 
-            dangerouslySetInnerHTML={{ __html: post.content }} 
-            className="space-y-6"
-          />
+          <MathRenderer content={post.content} />
         </div>
 
         {/* フッター */}

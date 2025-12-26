@@ -5,6 +5,7 @@ import "./globals.css";
 import { GoogleAnalytics } from '@next/third-parties/google';
 // ▼▼▼ Navbarをインポート（追加部分） ▼▼▼
 import Navbar from "@/components/Navbar";
+import "katex/dist/katex.min.css"; // 数式の見た目を整えるCSSを追加
 
 const inter = Inter({ subsets: ["latin"] });
 

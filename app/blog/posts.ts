@@ -172,18 +172,21 @@ export const posts: Post[] = [
       <h2 class="text-2xl font-bold mt-8 mb-4">2. 複利計算の数学的ロジックと実装</h2>
       <p>当シミュレーターでは、毎月の積立額が期首に投資されると仮定し、以下の漸化式に基づいて計算を行っています。</p>
 
-      <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 my-6 text-center">
-        <p class="text-sm mb-4 font-bold text-slate-700">毎月の積立計算式（等比数列の和）</p>
-        <div class="text-xl font-mono text-blue-600 mb-4">
-          $$S_n = A \frac{(1 + r)((1 + r)^n - 1)}{r}$$
-        </div>
-        <ul class="text-xs text-left text-slate-500 space-y-1 inline-block">
-          <li>$S_n$: $n$ ヶ月後の将来価値</li>
-          <li>$A$: 毎月の積立額</li>
-          <li>$r$: 月利（年利 / 12）</li>
-          <li>$n$: 積立月数</li>
-        </ul>
-      </div>
+      // app/blog/posts.ts の一部（数式部分）
+
+<div class="bg-slate-50 p-6 rounded-xl border border-slate-200 my-6 text-center">
+  <p class="text-sm mb-4 font-bold text-slate-700">毎月の積立計算式（等比数列の和）</p>
+  <div class="text-xl font-mono text-blue-600 mb-4">
+    {/* ▼ バックスラッシュを2つにするのがポイント！ */}
+    $$S_n = A \\frac{(1 + r)((1 + r)^n - 1)}{r}$$
+  </div>
+  <ul class="text-xs text-left text-slate-500 space-y-1 inline-block">
+    <li>$S_n$: $n$ ヶ月後の将来価値</li>
+    <li>$A$: 毎月の積立額</li>
+    <li>$r$: 月利（年利 / 12）</li>
+    <li>$n$: 積立月数</li>
+  </ul>
+</div>
 
       <h2 class="text-2xl font-bold mt-8 mb-4">3. リスク（標準偏差）と「72の法則」</h2>
       <p>投資のリスクとは「価格が下落すること」だけではなく、「リターンの振れ幅（標準偏差）」を指します。統計学的には、株価の変動は対数正規分布に従うと仮定されることが多いです。</p>
