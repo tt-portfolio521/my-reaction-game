@@ -1,7 +1,7 @@
 // components/TorqueVisualizer.tsx
 "use client";
 
-import { useState, useMemo } from "react"; // useMemoを追加
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 
 export default function TorqueVisualizer() {
@@ -19,8 +19,7 @@ export default function TorqueVisualizer() {
   const momentArm = INSERTION_DISTANCE * Math.sin(radian);
   const torque = Math.abs(MUSCLE_FORCE * momentArm);
 
-  // --- 【追加】グラフ用データ計算 ---
-  // 15度から180度の全データを事前計算
+  // --- グラフ用データ計算 ---
   const graphPoints = useMemo(() => {
     const points = [];
     for (let a = 15; a <= 180; a += 5) {
@@ -55,14 +54,13 @@ export default function TorqueVisualizer() {
   const arrowEndX = muscleInsertionX + (dx / length) * arrowLength;
   const arrowEndY = muscleInsertionY + (dy / length) * arrowLength;
 
-  // --- 【追加】グラフ描画の設定 ---
+  // --- グラフ描画の設定 ---
   const gWidth = 300;
   const gHeight = 100;
-  const maxTorque = 25; // グラフの最大メモリ(Nm)
-  const getGX = (a: number) => ((a - 15) / (180 - 15)) * gWidth; // 15〜180度を0〜gWidthに正規化
-  const getGY = (t: number) => gHeight - (t / maxTorque) * gHeight; // トルクをY座標に変換
+  const maxTorque = 25;
+  const getGX = (a: number) => ((a - 15) / (180 - 15)) * gWidth;
+  const getGY = (t: number) => gHeight - (t / maxTorque) * gHeight;
 
-  // グラフの曲線パスを生成
   const pathData = graphPoints.map((p, i) => 
     `${i === 0 ? 'M' : 'L'} ${getGX(p.a)} ${getGY(p.t)}`
   ).join(' ');
@@ -116,7 +114,6 @@ export default function TorqueVisualizer() {
 
           {/* 数値表示パネル */}
           <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-3">
-            {/* (中略：既存の数値表示コード) */}
             <div className="flex justify-between items-center text-sm">
               <span className="text-slate-600">筋肉の力 ($F$)</span>
               <span className="font-mono font-bold text-slate-800">500 N (一定)</span>
@@ -132,19 +129,17 @@ export default function TorqueVisualizer() {
             </div>
           </div>
 
-          {/* 【追加】トルク・角度曲線グラフ */}
+          {/* トルク・角度曲線グラフ */}
           <div className="bg-slate-900 p-4 rounded-xl shadow-inner relative">
             <h4 className="text-white text-[10px] font-bold mb-2 uppercase tracking-widest opacity-70">Torque-Angle Curve</h4>
             <div className="pl-6 pb-6 pr-2 pt-2 bg-slate-800/50 rounded-lg">
-                <svg width="100%" height="100%" viewBox={`0 0 ${gWidth} ${gHeight}`} className="overflow-visible">
-                {/* グリッド線 */}
+                {/* 【修正】viewBoxのパディングを広げてラベルが見切れないように調整 */}
+                <svg width="100%" height="100%" viewBox={`-35 -10 ${gWidth + 50} ${gHeight + 50}`} className="overflow-visible">
                 <line x1="0" y1={gHeight} x2={gWidth} y2={gHeight} stroke="#475569" strokeWidth="1" />
                 <line x1="0" y1="0" x2="0" y2={gHeight} stroke="#475569" strokeWidth="1" />
                 
-                {/* トルク曲線 */}
                 <path d={pathData} fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" className="opacity-60" />
                 
-                {/* 現在位置のマーカー（スライダーと連動） */}
                 <motion.circle
                     cx={getGX(angle)}
                     cy={getGY(torque)}
@@ -153,7 +148,6 @@ export default function TorqueVisualizer() {
                     className="shadow-xl drop-shadow-[0_0_8px_rgba(59,130,246,0.8)]"
                     animate={{ cx: getGX(angle), cy: getGY(torque) }}
                 />
-                {/* 現在位置を示す縦線 */}
                 <motion.line
                     x1={getGX(angle)} y1={0}
                     x2={getGX(angle)} y2={gHeight}
@@ -161,13 +155,20 @@ export default function TorqueVisualizer() {
                     animate={{ x1: getGX(angle), x2: getGX(angle) }}
                 />
 
-                {/* 軸ラベル */}
-                <text x={gWidth / 2} y={gHeight + 20} textAnchor="middle" className="fill-slate-400 text-[10px]">角度 (deg)</text>
-                <text x="-30" y={gHeight / 2} textAnchor="middle" rotate="-90" className="fill-slate-400 text-[10px]">トルク (Nm)</text>
-                <text x="0" y={gHeight + 12} textAnchor="middle" className="fill-slate-500 text-[8px]">15°</text>
-                <text x={gWidth} y={gHeight + 12} textAnchor="middle" className="fill-slate-500 text-[8px]">180°</text>
-                <text x="-5" y={gHeight} textAnchor="end" className="fill-slate-500 text-[8px]">0</text>
-                <text x="-5" y={0} textAnchor="end" className="fill-slate-500 text-[8px]">{maxTorque}</text>
+                {/* 【修正】軸ラベルと目盛りの位置を調整 */}
+                {/* X軸ラベルの位置を少し下げる */}
+                <text x={gWidth / 2} y={gHeight + 35} textAnchor="middle" className="fill-slate-400 text-[10px]">角度 (deg)</text>
+                
+                {/* Y軸ラベルの回転をtransformで正しく指定し、位置を調整 */}
+                <text transform={`translate(-30, ${gHeight / 2}) rotate(-90)`} textAnchor="middle" className="fill-slate-400 text-[10px]">トルク (Nm)</text>
+                
+                {/* 目盛りラベルの位置を調整して重なりを防ぐ */}
+                <text x="0" y={gHeight + 15} textAnchor="middle" className="fill-slate-500 text-[8px]">15°</text>
+                <text x={gWidth} y={gHeight + 15} textAnchor="middle" className="fill-slate-500 text-[8px]">180°</text>
+                
+                {/* Y軸目盛りに dominantBaseline="middle" を追加して垂直位置を合わせる */}
+                <text x="-8" y={gHeight} textAnchor="end" dominantBaseline="middle" className="fill-slate-500 text-[8px]">0</text>
+                <text x="-8" y={0} textAnchor="end" dominantBaseline="middle" className="fill-slate-500 text-[8px]">{maxTorque}</text>
                 </svg>
             </div>
           </div>
