@@ -22,14 +22,13 @@ export default function StretchReflexVisualizer() {
     }
   }, [phase]);
 
-  // 【修正】アニメーション速度を全体的に遅延
   const triggerReflex = () => {
     if (phase !== "idle") return;
     setPhase("strike");
-    setTimeout(() => setPhase("sensory"), 1000);   // 打撃後の余韻を長く
-    setTimeout(() => setPhase("motor"), 2500);     // 神経伝達の時間を確保
-    setTimeout(() => setPhase("extension"), 4000); // 指令到達までの間隔
-    setTimeout(() => setPhase("idle"), 8000);     // 終了後の待機
+    setTimeout(() => setPhase("sensory"), 1000);
+    setTimeout(() => setPhase("motor"), 2500);
+    setTimeout(() => setPhase("extension"), 4000);
+    setTimeout(() => setPhase("idle"), 8000);
   };
 
   const svgWidth = 350;
@@ -80,7 +79,7 @@ export default function StretchReflexVisualizer() {
               x2={ankleIdle.x} y2={ankleIdle.y}
               stroke="#94a3b8" strokeWidth="16" strokeLinecap="round"
               animate={phase === "extension" ? { x2: ankleExtended.x, y2: ankleExtended.y } : { x2: ankleIdle.x, y2: ankleIdle.y }}
-              transition={{ type: "spring", stiffness: 100, damping: 15 }} // 速度調整
+              transition={{ type: "spring", stiffness: 100, damping: 15 }}
             />
 
             {/* 膝関節 */}
@@ -95,10 +94,10 @@ export default function StretchReflexVisualizer() {
               strokeLinecap="round"
               strokeLinejoin="round"
               animate={{ d: phase === "extension" ? musclePathExtended : musclePathIdle }}
-              transition={{ duration: 0.8, ease: "easeInOut" }} // 収縮をゆっくり
+              transition={{ duration: 0.8, ease: "easeInOut" }}
             />
-            {/* 【修正】筋肉の近くにテキストを配置 */}
-            <text x={hip.x - 70} y={hip.y - 45} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
+            {/* 【修正】大腿四頭筋：位置を少し下げて筋肉に近づける */}
+            <text x={hip.x - 70} y={hip.y - 32} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
 
             {/* 膝蓋腱 */}
             <motion.line
@@ -110,19 +109,19 @@ export default function StretchReflexVisualizer() {
             />
             <text x={knee.x + 15} y={knee.y + 45} className="text-[10px] fill-slate-500">膝蓋腱</text>
 
-            {/* 神経回路 - Ia群求心性神経（青） */}
+            {/* Ia群求心性神経（青） */}
             <path d={`M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 80}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}`} fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="4 3" className="opacity-70" />
-            {/* 【修正】青色点線の近くに配置 */}
-            <text x={knee.x + 55} y={knee.y - 55} className="text-[9px] fill-blue-500 font-bold">Ia群求心性神経 (求心)</text>
+            {/* 【修正】求心性神経：位置を少し左へ移動 */}
+            <text x={knee.x + 35} y={knee.y - 55} className="text-[9px] fill-blue-500 font-bold">Ia群求心性神経 (求心)</text>
             
             {phase === "sensory" && (
               <motion.circle r="5" fill="#3b82f6" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 1.5, ease: "linear" }} style={{ offsetPath: `path("M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 80}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}")` }} />
             )}
             
-            {/* 神経回路 - α運動ニューロン（赤） */}
+            {/* α運動ニューロン（赤） */}
             <path d={`M ${spinalCordPos.x} ${spinalCordPos.y} C ${spinalCordPos.x - 20} ${spinalCordPos.y - 40}, ${hip.x - 40} ${hip.y - 50}, ${hip.x - 60} ${hip.y - 20}`} fill="none" stroke="#ef4444" strokeWidth="3" strokeDasharray="4 3" className="opacity-70" />
-            {/* 【修正】赤色点線の近くに配置 */}
-            <text x={hip.x - 60} y={hip.y - 65} className="text-[9px] fill-red-500 font-bold">α運動ニューロン (遠心)</text>
+            {/* 【修正】運動ニューロン：位置を少し右へ移動 */}
+            <text x={hip.x - 45} y={hip.y - 65} className="text-[9px] fill-red-500 font-bold">α運動ニューロン (遠心)</text>
             
             {phase === "motor" && (
               <motion.circle r="5" fill="#ef4444" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 1.5, ease: "linear" }} style={{ offsetPath: `path("M ${spinalCordPos.x} ${spinalCordPos.y} C ${spinalCordPos.x - 20} ${spinalCordPos.y - 40}, ${hip.x - 40} ${hip.y - 50}, ${hip.x - 60} ${hip.y - 20}")` }} />
