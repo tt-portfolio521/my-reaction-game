@@ -22,13 +22,14 @@ export default function StretchReflexVisualizer() {
     }
   }, [phase]);
 
+  // 【修正】アニメーション速度を全体的に遅延
   const triggerReflex = () => {
     if (phase !== "idle") return;
     setPhase("strike");
-    setTimeout(() => setPhase("sensory"), 600);
-    setTimeout(() => setPhase("motor"), 1400);
-    setTimeout(() => setPhase("extension"), 2000);
-    setTimeout(() => setPhase("idle"), 4500);
+    setTimeout(() => setPhase("sensory"), 1000);   // 打撃後の余韻を長く
+    setTimeout(() => setPhase("motor"), 2500);     // 神経伝達の時間を確保
+    setTimeout(() => setPhase("extension"), 4000); // 指令到達までの間隔
+    setTimeout(() => setPhase("idle"), 8000);     // 終了後の待機
   };
 
   const svgWidth = 350;
@@ -67,22 +68,25 @@ export default function StretchReflexVisualizer() {
                 d="M 15 25 Q 25 42, 15 60 M 55 25 Q 45 42, 55 60 M 20 42 L 50 42" 
                 fill="none" stroke="#e2e8f0" strokeWidth="8" strokeLinecap="round" 
               />
-              {/* 【修正1】漢字表記に変更し、位置を下へ調整 */}
               <text x="35" y="100" textAnchor="middle" className="text-[11px] fill-slate-500 font-bold">脊髄</text>
             </g>
 
+            {/* 大腿骨 */}
             <line x1={hip.x} y1={hip.y} x2={knee.x} y2={knee.y} stroke="#cbd5e1" strokeWidth="20" strokeLinecap="round" />
             
+            {/* 下腿骨 */}
             <motion.line
               x1={knee.x} y1={knee.y}
               x2={ankleIdle.x} y2={ankleIdle.y}
               stroke="#94a3b8" strokeWidth="16" strokeLinecap="round"
               animate={phase === "extension" ? { x2: ankleExtended.x, y2: ankleExtended.y } : { x2: ankleIdle.x, y2: ankleIdle.y }}
-              transition={{ type: "spring", stiffness: 180, damping: 12 }}
+              transition={{ type: "spring", stiffness: 100, damping: 15 }} // 速度調整
             />
 
+            {/* 膝関節 */}
             <circle cx={knee.x} cy={knee.y} r="14" fill="#cbd5e1" />
 
+            {/* 筋肉 */}
             <motion.path
               d={musclePathIdle}
               fill="none"
@@ -91,49 +95,52 @@ export default function StretchReflexVisualizer() {
               strokeLinecap="round"
               strokeLinejoin="round"
               animate={{ d: phase === "extension" ? musclePathExtended : musclePathIdle }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+              transition={{ duration: 0.8, ease: "easeInOut" }} // 収縮をゆっくり
             />
+            {/* 【修正】筋肉の近くにテキストを配置 */}
+            <text x={hip.x - 70} y={hip.y - 45} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
 
+            {/* 膝蓋腱 */}
             <motion.line
               x1={patellaBottom.x} y1={patellaBottom.y}
               x2={tibiaAttachIdle.x} y2={tibiaAttachIdle.y}
               stroke="#cbd5e1" strokeWidth="8" strokeLinecap="round"
               animate={phase === "extension" ? { x2: tibiaAttachExtended.x, y2: tibiaAttachExtended.y } : { x2: tibiaAttachIdle.x, y2: tibiaAttachIdle.y }}
-              transition={{ type: "spring", stiffness: 180, damping: 12 }}
+              transition={{ type: "spring", stiffness: 100, damping: 15 }}
             />
+            <text x={knee.x + 15} y={knee.y + 45} className="text-[10px] fill-slate-500">膝蓋腱</text>
 
-            {/* 神経回路 */}
+            {/* 神経回路 - Ia群求心性神経（青） */}
             <path d={`M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 80}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}`} fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="4 3" className="opacity-70" />
-            {/* 【修正2】Ia群求心性神経ラベルの位置を調整 */}
-            <text x={spinalCordPos.x - 80} y={spinalCordPos.y + 95} className="text-[9px] fill-blue-500 font-bold">Ia群求心性神経 (求心)</text>
+            {/* 【修正】青色点線の近くに配置 */}
+            <text x={knee.x + 55} y={knee.y - 55} className="text-[9px] fill-blue-500 font-bold">Ia群求心性神経 (求心)</text>
             
             {phase === "sensory" && (
-              <motion.circle r="5" fill="#3b82f6" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 0.7, ease: "linear" }} style={{ offsetPath: `path("M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 80}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}")` }} />
+              <motion.circle r="5" fill="#3b82f6" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 1.5, ease: "linear" }} style={{ offsetPath: `path("M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 80}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}")` }} />
             )}
             
+            {/* 神経回路 - α運動ニューロン（赤） */}
             <path d={`M ${spinalCordPos.x} ${spinalCordPos.y} C ${spinalCordPos.x - 20} ${spinalCordPos.y - 40}, ${hip.x - 40} ${hip.y - 50}, ${hip.x - 60} ${hip.y - 20}`} fill="none" stroke="#ef4444" strokeWidth="3" strokeDasharray="4 3" className="opacity-70" />
-            {/* 【修正2】α運動ニューロンラベルの位置を調整 */}
-            <text x={hip.x - 80} y={hip.y + 30} className="text-[9px] fill-red-500 font-bold">α運動ニューロン (遠心)</text>
+            {/* 【修正】赤色点線の近くに配置 */}
+            <text x={hip.x - 60} y={hip.y - 65} className="text-[9px] fill-red-500 font-bold">α運動ニューロン (遠心)</text>
             
             {phase === "motor" && (
-              <motion.circle r="5" fill="#ef4444" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 0.7, ease: "linear" }} style={{ offsetPath: `path("M ${spinalCordPos.x} ${spinalCordPos.y} C ${spinalCordPos.x - 20} ${spinalCordPos.y - 40}, ${hip.x - 40} ${hip.y - 50}, ${hip.x - 60} ${hip.y - 20}")` }} />
+              <motion.circle r="5" fill="#ef4444" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 1.5, ease: "linear" }} style={{ offsetPath: `path("M ${spinalCordPos.x} ${spinalCordPos.y} C ${spinalCordPos.x - 20} ${spinalCordPos.y - 40}, ${hip.x - 40} ${hip.y - 50}, ${hip.x - 60} ${hip.y - 20}")` }} />
             )}
 
+            {/* ハンマー */}
             <motion.g
               initial={{ x: knee.x - 70, y: knee.y + 30, rotate: -45, scaleX: -1 }}
               animate={phase === "strike" ? { x: knee.x - 15, y: knee.y + 25, rotate: -10, scaleX: -1 } : { x: knee.x - 70, y: knee.y + 30, rotate: -45, scaleX: -1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 10 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
             >
               <rect x="0" y="-5" width="40" height="10" fill="#1e293b" rx="4" />
               <rect x="35" y="-15" width="10" height="30" fill="#475569" rx="2" />
             </motion.g>
 
-            {/* 【修正2】大腿四頭筋ラベルの位置を調整 */}
-            <text x={hip.x - 100} y={hip.y - 40} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
-            {/* 【修正2】膝蓋腱ラベルの位置を調整 */}
-            <text x={knee.x + 15} y={knee.y + 45} className="text-[10px] fill-slate-500">膝蓋腱</text>
           </svg>
 
+          {/* フェーズ解説バッジ */}
           <div className="absolute top-4 left-4 bg-white/90 p-3 rounded-xl shadow-sm border border-slate-100 max-w-[160px]">
             <AnimatePresence mode="wait">
               <motion.div
@@ -154,7 +161,6 @@ export default function StretchReflexVisualizer() {
         </div>
 
         <div className="space-y-6">
-          {/* (右側の操作・解説パネルは変更なし) */}
           <div className="text-center">
             <button
               onClick={triggerReflex}
@@ -174,7 +180,7 @@ export default function StretchReflexVisualizer() {
             </h4>
             <div className="space-y-4 text-sm leading-relaxed text-slate-600 text-[13px]">
               <p>
-                ハンマーで膝蓋腱を叩くと、大腿四頭筋が受動的に引き伸ばされます。筋肉内の<strong>筋紡錘</strong>がこれを感知し、信号が送られます。
+                ハンマーで膝蓋腱を叩くと、大腿四頭筋が受動的に引き伸ばされます。筋肉内の筋紡錘がこれを感知し、信号が送られます。
               </p>
               <ul className="space-y-2 list-none p-0">
                 <li className="flex gap-2">
