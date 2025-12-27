@@ -97,7 +97,7 @@ export default function StretchReflexVisualizer() {
               transition={{ duration: 0.8, ease: "easeInOut" }}
             />
             {/* 【修正】大腿四頭筋：位置を少し下げて筋肉に近づける */}
-            <text x={hip.x - 70} y={hip.y - 32} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
+            <text x={hip.x - 70} y={hip.y - 50} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
 
             {/* 膝蓋腱 */}
             <motion.line
@@ -112,7 +112,7 @@ export default function StretchReflexVisualizer() {
             {/* Ia群求心性神経（青） */}
             <path d={`M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 80}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}`} fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="4 3" className="opacity-70" />
             {/* 【修正】求心性神経：位置を少し左へ移動 */}
-            <text x={knee.x + 35} y={knee.y - 55} className="text-[9px] fill-blue-500 font-bold">Ia群求心性神経 (求心)</text>
+            <text x={knee.x + 50} y={knee.y - 55} className="text-[9px] fill-blue-500 font-bold">Ia群求心性神経 (求心)</text>
             
             {phase === "sensory" && (
               <motion.circle r="5" fill="#3b82f6" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 1.5, ease: "linear" }} style={{ offsetPath: `path("M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 80}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}")` }} />
