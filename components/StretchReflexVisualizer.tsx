@@ -33,11 +33,13 @@ export default function StretchReflexVisualizer() {
 
   const svgWidth = 350;
   const svgHeight = 380;
-  const knee = { x: 150, y: 150 };
-  const hip = { x: 270, y: 150 };
-  const ankleIdle = { x: 150, y: 280 };
-  const ankleExtended = { x: 50, y: 235 }; 
-  const spinalCordPos = { x: 280, y: 60 };
+
+  // --- 【修正】配置バランスの調整（脚を左へ、脊髄を右へ） ---
+  const knee = { x: 110, y: 150 };      // 150 -> 110 (左へ)
+  const hip = { x: 230, y: 150 };       // 270 -> 230 (左へ)
+  const ankleIdle = { x: 110, y: 280 }; // 150 -> 110 (左へ)
+  const ankleExtended = { x: 20, y: 235 }; // 50 -> 20 (左へ)
+  const spinalCordPos = { x: 300, y: 60 }; // 280 -> 300 (右へ)
 
   const musclePathIdle = `M ${hip.x} ${hip.y - 15} Q ${hip.x - 60} ${hip.y - 25}, ${knee.x} ${knee.y - 10} L ${knee.x} ${knee.y + 20}`;
   const musclePathExtended = `M ${hip.x} ${hip.y - 15} Q ${hip.x - 50} ${hip.y - 50}, ${knee.x + 5} ${knee.y - 15} L ${knee.x + 5} ${knee.y + 15}`;
@@ -96,8 +98,8 @@ export default function StretchReflexVisualizer() {
               animate={{ d: phase === "extension" ? musclePathExtended : musclePathIdle }}
               transition={{ duration: 0.8, ease: "easeInOut" }}
             />
-            {/* 【修正】大腿四頭筋：位置を少し下げて筋肉に近づける */}
-            <text x={hip.x - 70} y={hip.y - 25} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
+            {/* 大腿四頭筋ラベル（位置微調整） */}
+            <text x={hip.x - 70} y={hip.y - 32} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
 
             {/* 膝蓋腱 */}
             <motion.line
@@ -111,8 +113,8 @@ export default function StretchReflexVisualizer() {
 
             {/* Ia群求心性神経（青） */}
             <path d={`M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 80}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}`} fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="4 3" className="opacity-70" />
-            {/* 【修正】求心性神経：位置を少し左へ移動 */}
-            <text x={knee.x + 20} y={knee.y - 55} className="text-[9px] fill-blue-500 font-bold">Ia群求心性神経 (求心)</text>
+            {/* 【修正】Ia群ラベルをより左へシフト */}
+            <text x={knee.x + 15} y={knee.y - 55} className="text-[9px] fill-blue-500 font-bold">Ia群求心性神経 (求心)</text>
             
             {phase === "sensory" && (
               <motion.circle r="5" fill="#3b82f6" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 1.5, ease: "linear" }} style={{ offsetPath: `path("M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 80}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}")` }} />
@@ -120,7 +122,7 @@ export default function StretchReflexVisualizer() {
             
             {/* α運動ニューロン（赤） */}
             <path d={`M ${spinalCordPos.x} ${spinalCordPos.y} C ${spinalCordPos.x - 20} ${spinalCordPos.y - 40}, ${hip.x - 40} ${hip.y - 50}, ${hip.x - 60} ${hip.y - 20}`} fill="none" stroke="#ef4444" strokeWidth="3" strokeDasharray="4 3" className="opacity-70" />
-            {/* 【修正】運動ニューロン：位置を少し右へ移動 */}
+            {/* α運動ニューロンラベル */}
             <text x={hip.x - 45} y={hip.y - 65} className="text-[9px] fill-red-500 font-bold">α運動ニューロン (遠心)</text>
             
             {phase === "motor" && (
