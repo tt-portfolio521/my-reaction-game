@@ -68,7 +68,8 @@ export default function StretchReflexVisualizer() {
                 d="M 15 25 Q 25 42, 15 60 M 55 25 Q 45 42, 55 60 M 20 42 L 50 42" 
                 fill="none" stroke="#e2e8f0" strokeWidth="8" strokeLinecap="round" 
               />
-              <text x="35" y="100" textAnchor="middle" className="text-[11px] fill-slate-500 font-bold">脊髄</text>
+              {/* 【修正1】脊髄の文字：図形の上側へ移動 */}
+              <text x="35" y="-10" textAnchor="middle" className="text-[11px] fill-slate-500 font-bold">脊髄</text>
             </g>
 
             {/* 大腿骨 */}
@@ -91,16 +92,14 @@ export default function StretchReflexVisualizer() {
               d={musclePathIdle}
               fill="none"
               stroke="#ef4444"
-              /* --- 【修正】筋肉の太さの変化を小さく調整 --- */
               strokeWidth={phase === "extension" ? "9" : "6"} 
-              /* 以前は "15" : "8" だったのを変更 */
               strokeLinecap="round"
               strokeLinejoin="round"
               animate={{ d: phase === "extension" ? musclePathExtended : musclePathIdle }}
               transition={{ duration: 0.8, ease: "easeInOut" }}
             />
-            {/* 大腿四頭筋ラベル */}
-            <text x={hip.x - 70} y={hip.y - 28} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
+            {/* 【修正2】大腿四頭筋ラベル：かなり右側へ移動 */}
+            <text x={hip.x + 20} y={hip.y - 28} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
 
             {/* 膝蓋腱 */}
             <motion.line
