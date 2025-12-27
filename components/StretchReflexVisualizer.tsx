@@ -34,11 +34,10 @@ export default function StretchReflexVisualizer() {
   const svgWidth = 350;
   const svgHeight = 380;
 
-  // --- 【修正】配置の再調整（脚全体を下へ、Iaラベルを左へ） ---
-  const knee = { x: 110, y: 190 };      // y: 150 -> 190 (下へ移動)
-  const hip = { x: 230, y: 190 };       // y: 150 -> 190 (下へ移動)
-  const ankleIdle = { x: 110, y: 320 }; // y: 280 -> 320 (下へ移動)
-  const ankleExtended = { x: 20, y: 275 }; // y: 235 -> 275 (下へ移動)
+  const knee = { x: 110, y: 190 };
+  const hip = { x: 230, y: 190 };
+  const ankleIdle = { x: 110, y: 320 };
+  const ankleExtended = { x: 20, y: 275 };
   const spinalCordPos = { x: 300, y: 60 };
 
   const musclePathIdle = `M ${hip.x} ${hip.y - 15} Q ${hip.x - 60} ${hip.y - 25}, ${knee.x} ${knee.y - 10} L ${knee.x} ${knee.y + 20}`;
@@ -92,13 +91,15 @@ export default function StretchReflexVisualizer() {
               d={musclePathIdle}
               fill="none"
               stroke="#ef4444"
-              strokeWidth={phase === "extension" ? "15" : "8"} 
+              /* --- 【修正】筋肉の太さの変化を小さく調整 --- */
+              strokeWidth={phase === "extension" ? "9" : "6"} 
+              /* 以前は "15" : "8" だったのを変更 */
               strokeLinecap="round"
               strokeLinejoin="round"
               animate={{ d: phase === "extension" ? musclePathExtended : musclePathIdle }}
               transition={{ duration: 0.8, ease: "easeInOut" }}
             />
-            {/* 【修正】大腿四頭筋ラベル：脚の移動に合わせて位置を調整（少し下げた） */}
+            {/* 大腿四頭筋ラベル */}
             <text x={hip.x - 70} y={hip.y - 28} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
 
             {/* 膝蓋腱 */}
@@ -113,7 +114,6 @@ export default function StretchReflexVisualizer() {
 
             {/* Ia群求心性神経（青） */}
             <path d={`M ${knee.x + 10} ${knee.y - 10} C ${knee.x + 40} ${knee.y - 120}, ${spinalCordPos.x - 60} ${spinalCordPos.y + 40}, ${spinalCordPos.x} ${spinalCordPos.y}`} fill="none" stroke="#3b82f6" strokeWidth="3" strokeDasharray="4 3" className="opacity-70" />
-            {/* 【修正】Ia群ラベル：さらに左へ（knee.x - 30付近） */}
             <text x={knee.x - 30} y={knee.y - 85} className="text-[9px] fill-blue-500 font-bold">Ia群求心性神経 (求心)</text>
             
             {phase === "sensory" && (
