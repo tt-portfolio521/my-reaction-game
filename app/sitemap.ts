@@ -21,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/depreciation',// 減価償却
     '/cvp',         // 損益分岐点
     '/reaction',    // 反射神経
+    '/reflex',//伸張反射
     '/blog',        // ブログ一覧
   ].map((route) => ({
     url: `${baseUrl}${route}`,

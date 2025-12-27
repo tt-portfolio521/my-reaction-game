@@ -113,6 +113,24 @@ export default function Home() {
     筋肉の付着位置による「パワー型」と「スピード型」の違いを数学的に体感します。
   </p>
 </Link>
+{/* 膝蓋腱反射（伸張反射）シミュレーター */}
+<Link 
+  href="/reflex" 
+  className="group p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-red-500/5 transition-all duration-300 hover:-translate-y-1 flex flex-col h-full"
+>
+  <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-300">
+    🦵
+  </div>
+  <h3 className="font-black text-xl text-slate-900 mb-3 group-hover:text-red-600 transition-colors">
+    膝蓋腱反射シミュレーター
+  </h3>
+  <p className="text-sm text-slate-500 leading-relaxed flex-grow">
+    打撃が神経信号に変わり、筋肉を収縮させる「反射弓」のプロセスを完全可視化。脊髄レベルの高速制御を学びます。
+  </p>
+  <div className="mt-6 flex items-center text-xs font-bold text-red-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+    TRY SIMULATION →
+  </div>
+</Link>
 
           </div>
         </section>
