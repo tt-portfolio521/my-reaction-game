@@ -7,7 +7,6 @@ import renderMathInElement from "katex/dist/contrib/auto-render";
 import "katex/dist/katex.min.css";
 
 export default function StretchReflexVisualizer() {
-  // 反射のステート管理: idle -> strike -> sensory -> motor -> extension -> reset
   const [phase, setPhase] = useState("idle");
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -23,23 +22,33 @@ export default function StretchReflexVisualizer() {
     }
   }, [phase]);
 
-  // 反射アニメーションの実行
   const triggerReflex = () => {
     if (phase !== "idle") return;
-
     setPhase("strike");
-    setTimeout(() => setPhase("sensory"), 600);   // 1. 打撃
-    setTimeout(() => setPhase("motor"), 1400);    // 2. Ⅰa群求心性神経の伝達
-    setTimeout(() => setPhase("extension"), 2000);// 3. 運動ニューロンの活性化と伸展
-    setTimeout(() => setPhase("idle"), 4500);     // リセット
+    setTimeout(() => setPhase("sensory"), 600);
+    setTimeout(() => setPhase("motor"), 1400);
+    setTimeout(() => setPhase("extension"), 2000);
+    setTimeout(() => setPhase("idle"), 4500);
   };
 
-  // SVG座標設定
-  const hip = { x: 100, y: 100 };
-  const knee = { x: 100, y: 220 };
-  const ankleIdle = { x: 100, y: 340 };
-  const ankleExtended = { x: 180, y: 300 };
-  const spinalCord = { x: 300, y: 80 };
+  // --- 座標設定（90度座位モデル）---
+  const svgWidth = 350;
+  const svgHeight = 380;
+  
+  // 関節点
+  const hip = { x: 120, y: 100 };     // 股関節
+  const knee = { x: 120, y: 240 };    // 膝関節（ここを中心に回転）
+  const ankleIdle = { x: 260, y: 240 }; // 足首（初期：90度）
+  const ankleExtended = { x: 250, y: 180 }; // 足首（伸展時：跳ね上がり）
+
+  // 脊髄の位置
+  const spinalCord = { x: 280, y: 60 };
+
+  // 大腿四頭筋のパス定義（解剖図を参考にカーブを調整）
+  // idle時: 少しリラックスしたカーブ
+  const musclePathIdle = `M ${hip.x - 10} ${hip.y - 10} Q ${hip.x - 35} ${knee.y - 80}, ${knee.x + 15} ${knee.y + 5}`;
+  // extension時: 収縮して太く、短くなったカーブ
+  const musclePathExtended = `M ${hip.x - 10} ${hip.y - 10} Q ${hip.x - 45} ${knee.y - 90}, ${knee.x + 15} ${knee.y + 5}`;
 
   return (
     <div ref={containerRef} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm my-8">
@@ -50,65 +59,71 @@ export default function StretchReflexVisualizer() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
         
         {/* --- 左側：アニメーションエリア --- */}
-        <div className="relative bg-slate-50 rounded-2xl border border-slate-100 flex justify-center py-10 h-[400px]">
-          <svg width="350" height="380" viewBox="0 0 350 380" className="overflow-visible">
-            {/* 脊髄（中枢） */}
-            <rect x="270" y="40" width="60" height="80" rx="10" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="2" />
-            <text x="300" y="30" textAnchor="middle" className="text-[10px] fill-slate-400 font-bold uppercase">Spinal Cord (脊髄)</text>
-
-            {/* 大腿（上腕 bone） */}
-            <line x1={hip.x} y1={hip.y} x2={knee.x} y2={knee.y} stroke="#cbd5e1" strokeWidth="15" strokeLinecap="round" />
+        <div className="relative bg-slate-50 rounded-2xl border border-slate-100 flex justify-center py-6 h-[400px]">
+          <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="overflow-visible">
             
-            {/* 下腿（可動部） */}
+            {/* 脊髄（中枢） */}
+            <rect x={spinalCord.x - 30} y={spinalCord.y - 40} width="60" height="80" rx="10" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="2" />
+            <text x={spinalCord.x} y={spinalCord.y - 50} textAnchor="middle" className="text-[10px] fill-slate-400 font-bold uppercase">Spinal Cord (脊髄)</text>
+
+            {/* 大腿骨（固定） */}
+            <line x1={hip.x} y1={hip.y} x2={knee.x} y2={knee.y} stroke="#cbd5e1" strokeWidth="18" strokeLinecap="round" />
+            
+            {/* 下腿骨（可動部） */}
             <motion.line
               x1={knee.x} y1={knee.y}
               x2={ankleIdle.x} y2={ankleIdle.y}
-              stroke="#94a3b8" strokeWidth="15" strokeLinecap="round"
+              stroke="#94a3b8" strokeWidth="16" strokeLinecap="round"
               animate={phase === "extension" ? { x2: ankleExtended.x, y2: ankleExtended.y } : { x2: ankleIdle.x, y2: ankleIdle.y }}
-              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              transition={{ type: "spring", stiffness: 180, damping: 12 }}
             />
 
-            {/* 大腿四頭筋（収縮する筋肉） */}
+            {/* 膝関節 */}
+            <circle cx={knee.x} cy={knee.y} r="12" fill="#cbd5e1" />
+
+            {/* 大腿四頭筋（解剖図に基づく配置と形状） */}
             <motion.path
-              d={phase === "extension" 
-                ? `M ${hip.x-10} ${hip.y} Q ${hip.x-25} ${knee.y-60}, ${knee.x-5} ${knee.y-10}`
-                : `M ${hip.x-10} ${hip.y} Q ${hip.x-15} ${knee.y-60}, ${knee.x-5} ${knee.y-10}`
-              }
-              fill="none" stroke="#ef4444" strokeWidth={phase === "extension" ? "14" : "10"} strokeLinecap="round"
-              animate={{ d: phase === "extension" 
-                ? `M ${hip.x-10} ${hip.y} Q ${hip.x-25} ${knee.y-60}, ${knee.x-5} ${knee.y-10}`
-                : `M ${hip.x-10} ${hip.y} Q ${hip.x-15} ${knee.y-60}, ${knee.x-5} ${knee.y-10}`
-              }}
+              d={musclePathIdle}
+              fill="none"
+              stroke="#ef4444"
+              strokeWidth={phase === "extension" ? "16" : "12"} // 収縮時に太くなる
+              strokeLinecap="round"
+              animate={{ d: phase === "extension" ? musclePathExtended : musclePathIdle }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             />
 
-            {/* Ⅰa群求心性神経（青：感覚） */}
-            <path d={`M ${knee.x} ${knee.y} C 200 200, 250 100, ${spinalCord.x} ${spinalCord.y}`} fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="4" className="opacity-30" />
+            {/* 膝蓋腱（ハンマーで叩く部分） */}
+            <line x1={knee.x + 5} y1={knee.y + 5} x2={knee.x + 15} y2={knee.y + 25} stroke="#cbd5e1" strokeWidth="6" strokeLinecap="round" />
+
+            {/* 神経経路（配置を調整） */}
+            {/* Ⅰa群求心性神経（青） */}
+            <path d={`M ${knee.x - 10} ${knee.y - 50} C ${hip.x + 40} ${hip.y + 20}, ${spinalCord.x - 40} ${spinalCord.y + 60}, ${spinalCord.x} ${spinalCord.y}`} fill="none" stroke="#3b82f6" strokeWidth="2" strokeDasharray="4 3" className="opacity-40" />
             {phase === "sensory" && (
-              <motion.circle r="4" fill="#3b82f6" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 0.8 }} style={{ offsetPath: `path("M ${knee.x} ${knee.y} C 200 200, 250 100, ${spinalCord.x} ${spinalCord.y}")` }} />
+              <motion.circle r="4" fill="#3b82f6" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 0.7, ease: "linear" }} style={{ offsetPath: `path("M ${knee.x - 10} ${knee.y - 50} C ${hip.x + 40} ${hip.y + 20}, ${spinalCord.x - 40} ${spinalCord.y + 60}, ${spinalCord.x} ${spinalCord.y}")` }} />
             )}
 
-            {/* 運動ニューロン（赤：指令） */}
-            <path d={`M ${spinalCord.x} ${spinalCord.y} C 250 120, 180 180, ${hip.x} ${hip.y+40}`} fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="4" className="opacity-30" />
+            {/* 運動ニューロン（赤） */}
+            <path d={`M ${spinalCord.x} ${spinalCord.y} C ${spinalCord.x - 30} ${spinalCord.y - 50}, ${hip.x - 20} ${hip.y - 20}, ${hip.x - 20} ${hip.y + 30}`} fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="4 3" className="opacity-40" />
             {phase === "motor" && (
-              <motion.circle r="4" fill="#ef4444" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 0.8 }} style={{ offsetPath: `path("M ${spinalCord.x} ${spinalCord.y} C 250 120, 180 180, ${hip.x} ${hip.y+40}")` }} />
+              <motion.circle r="4" fill="#ef4444" initial={{ offsetDistance: "0%" }} animate={{ offsetDistance: "100%" }} transition={{ duration: 0.7, ease: "linear" }} style={{ offsetPath: `path("M ${spinalCord.x} ${spinalCord.y} C ${spinalCord.x - 30} ${spinalCord.y - 50}, ${hip.x - 20} ${hip.y - 20}, ${hip.x - 20} ${hip.y + 30}")` }} />
             )}
 
-            {/* ハンマー（打撃） */}
+            {/* ハンマー（打撃位置を調整） */}
             <motion.g
-              initial={{ x: 50, y: 220, rotate: -45 }}
-              animate={phase === "strike" ? { rotate: 0, x: 85 } : { rotate: -45, x: 50 }}
-              transition={{ duration: 0.2 }}
+              initial={{ x: knee.x - 40, y: knee.y + 40, rotate: -30 }}
+              animate={phase === "strike" ? { x: knee.x, y: knee.y + 15, rotate: 10 } : { x: knee.x - 40, y: knee.y + 40, rotate: -30 }}
+              transition={{ type: "spring", stiffness: 300, damping: 10 }}
             >
-              <rect x="0" y="0" width="10" height="40" fill="#475569" rx="2" />
-              <rect x="-10" y="-10" width="30" height="15" fill="#1e293b" rx="4" />
+              <rect x="0" y="0" width="8" height="35" fill="#475569" rx="2" />
+              <rect x="-12" y="-8" width="32" height="12" fill="#1e293b" rx="4" />
             </motion.g>
 
             {/* ラベル */}
-            <text x={hip.x-30} y={hip.y+50} className="text-[10px] fill-red-500 font-bold" style={{ writingMode: 'vertical-rl' }}>大腿四頭筋</text>
-            <text x={knee.x+10} y={knee.y+10} className="text-[10px] fill-slate-500">膝蓋腱</text>
+            <text x={hip.x - 50} y={hip.y + 80} className="text-[10px] fill-red-500 font-bold" style={{ writingMode: 'vertical-rl' }}>大腿四頭筋</text>
+            <text x={knee.x + 20} y={knee.y + 35} className="text-[10px] fill-slate-500">膝蓋腱</text>
           </svg>
 
-          {/* フェーズ解説バッジ */}
+          {/* フェーズ解説バッジ（変更なし） */}
           <div className="absolute top-4 right-4 bg-white/90 p-3 rounded-xl shadow-sm border border-slate-100 max-w-[150px]">
             <AnimatePresence mode="wait">
               <motion.div
@@ -119,16 +134,16 @@ export default function StretchReflexVisualizer() {
                 className="text-[11px] leading-tight"
               >
                 {phase === "idle" && <span className="text-slate-400 font-bold">待機中... ハンマーをクリックしてください</span>}
-                {phase === "strike" && <span className="text-orange-600 font-bold">1. 腱を打撃<br/><span className="font-normal text-slate-500 text-[10px]">筋肉が急激に伸展されます</span></span>}
-                {phase === "sensory" && <span className="text-blue-600 font-bold">2. 感覚伝達<br/><span className="font-normal text-slate-500 text-[10px]">Ⅰa求心性神経が脊髄へ信号を送る</span></span>}
-                {phase === "motor" && <span className="text-red-600 font-bold">3. 運動指令<br/><span className="font-normal text-slate-500 text-[10px]">運動ニューロンが活性化</span></span>}
-                {phase === "extension" && <span className="text-green-600 font-bold">4. 筋肉の収縮<br/><span className="font-normal text-slate-500 text-[10px]">膝関節が伸展（跳ね上がる）</span></span>}
+                {phase === "strike" && <span className="text-orange-600 font-bold">1. 腱を打撃<br/><span className="font-normal text-slate-500 text-[10px]">筋肉が一瞬引き伸ばされます</span></span>}
+                {phase === "sensory" && <span className="text-blue-600 font-bold">2. 感覚伝達<br/><span className="font-normal text-slate-500 text-[10px]">筋紡錘が検知し脊髄へ</span></span>}
+                {phase === "motor" && <span className="text-red-600 font-bold">3. 運動指令<br/><span className="font-normal text-slate-500 text-[10px]">脊髄から収縮命令が出ます</span></span>}
+                {phase === "extension" && <span className="text-green-600 font-bold">4. 筋肉の収縮<br/><span className="font-normal text-slate-500 text-[10px]">膝が伸展（跳ね上がる）</span></span>}
               </motion.div>
             </AnimatePresence>
           </div>
         </div>
 
-        {/* --- 右側：操作と解説 --- */}
+        {/* --- 右側：操作と解説（変更なし） --- */}
         <div className="space-y-6">
           <div className="text-center">
             <button
@@ -143,7 +158,7 @@ export default function StretchReflexVisualizer() {
               腱を叩く（テスト実行）
             </button>
           </div>
-
+          {/* (解説セクションは以前と同じため省略) */}
           <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
             <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
               <span className="text-blue-500">●</span> 伸張反射のメカニズム
@@ -164,11 +179,6 @@ export default function StretchReflexVisualizer() {
                 </li>
               </ul>
             </div>
-          </div>
-
-          <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 text-[13px] text-amber-900 leading-snug">
-            💡 <strong>アドセンス対策のヒント:</strong><br/>
-            この「不随意運動」の理解は、人間工学における「反応時間」と「反射時間」の違いを説明する際に非常に重要です。脊髄レベルで処理されるため、脳を経由する随意的反応（前回の反射神経テスト）よりも圧倒的に高速です。
           </div>
         </div>
       </div>
