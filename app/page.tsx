@@ -105,6 +105,14 @@ export default function Home() {
   <h3 className="font-bold text-lg mb-2">関節トルク・シミュレーター</h3>
   <p className="text-sm text-slate-500">角度による発揮力の変化をバイオメカニクスの視点で見える化します。</p>
 </Link>
+{/* 筋肉収縮シミュレーターのカード */}
+<Link href="/excursion" className="group p-6 bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition">
+  <div className="text-3xl mb-4">⚙️</div>
+  <h3 className="font-bold text-lg mb-2">筋肉収縮・可動域シミュレーター</h3>
+  <p className="text-sm text-slate-500">
+    筋肉の付着位置による「パワー型」と「スピード型」の違いを数学的に体感します。
+  </p>
+</Link>
 
           </div>
         </section>
