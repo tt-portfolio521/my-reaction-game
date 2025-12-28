@@ -126,7 +126,7 @@ export default function StretchReflexVisualizer() {
               animate={{ d: phase === "extension" ? musclePathExtended : musclePathIdle }}
               transition={{ duration: 1.0 }}
             />
-            <text x={hip.x - 80} y={hip.y - 28} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
+            <text x={hip.x - 50} y={hip.y - 28} className="text-[10px] fill-red-500 font-bold">大腿四頭筋</text>
 
             {/* 膝蓋腱 */}
             <motion.line
@@ -148,7 +148,7 @@ export default function StretchReflexVisualizer() {
             
             {/* α運動ニューロン（赤） */}
             <path ref={motorPathRef} d={motorPathD} fill="none" stroke="#ef4444" strokeWidth="3" strokeDasharray="4 3" className="opacity-70" />
-            <text x={hip.x + 20} y={hip.y - 65} className="text-[9px] fill-red-500 font-bold">α運動ニューロン (遠心)</text>
+            <text x={hip.x + 10} y={hip.y - 65} className="text-[9px] fill-red-500 font-bold">α運動ニューロン (遠心)</text>
             
             {phase === "motor" && (
               <motion.circle r="6" fill="#ef4444" style={{ cx: motorPos.x, cy: motorPos.y }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
