@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Metadata } from 'next';
+// Zapアイコンを追加でインポート
+import { Zap } from "lucide-react";
 
 // トップページ用のSEO設定
 export const metadata: Metadata = {
@@ -99,51 +101,66 @@ export default function Home() {
                 <span className="text-amber-600 font-bold text-sm text-right">計測する →</span>
               </div>
             </Link>
-            {/* ツールカードの例 */}
-<Link href="/torque" className="group p-6 bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition">
-  <div className="text-3xl mb-4">💪</div>
-  <h3 className="font-bold text-lg mb-2">関節トルク・シミュレーター</h3>
-  <p className="text-sm text-slate-500">角度による発揮力の変化をバイオメカニクスの視点で見える化します。</p>
-</Link>
-{/* 筋肉収縮シミュレーターのカード */}
-<Link href="/excursion" className="group p-6 bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition">
-  <div className="text-3xl mb-4">⚙️</div>
-  <h3 className="font-bold text-lg mb-2">筋肉収縮・可動域シミュレーター</h3>
-  <p className="text-sm text-slate-500">
-    筋肉の付着位置による「パワー型」と「スピード型」の違いを数学的に体感します。
-  </p>
-</Link>
-{/* 膝蓋腱反射（伸張反射）シミュレーター */}
-<Link 
-  href="/reflex" 
-  className="group p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-red-500/5 transition-all duration-300 hover:-translate-y-1 flex flex-col h-full"
->
-  <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-300">
-    🦵
-  </div>
-  <h3 className="font-black text-xl text-slate-900 mb-3 group-hover:text-red-600 transition-colors">
-    膝蓋腱反射シミュレーター
-  </h3>
-  <p className="text-sm text-slate-500 leading-relaxed flex-grow">
-    打撃が神経信号に変わり、筋肉を収縮させる「反射弓」のプロセスを完全可視化。脊髄レベルの高速制御を学びます。
-  </p>
-  <div className="mt-6 flex items-center text-xs font-bold text-red-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-    TRY SIMULATION →
-  </div>
-</Link>
+
+            {/* 関節トルク・シミュレーター */}
+            <Link href="/torque" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-purple-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-purple-50 w-fit p-3 rounded-xl">💪</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-purple-600">関節トルク計算機</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  角度による発揮力の変化をバイオメカニクスの視点で見える化します。
+                </p>
+                <span className="text-purple-600 font-bold text-sm text-right">計算する →</span>
+              </div>
+            </Link>
+
+            {/* 筋肉収縮・可動域シミュレーター */}
+            <Link href="/excursion" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-cyan-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-cyan-50 w-fit p-3 rounded-xl">⚙️</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-cyan-600">筋肉収縮シミュレーター</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                   筋肉の付着位置による「パワー型」と「スピード型」の違いを数学的に体感します。
+                </p>
+                <span className="text-cyan-600 font-bold text-sm text-right">計算する →</span>
+              </div>
+            </Link>
+
+            {/* 膝蓋腱反射（伸張反射）シミュレーター */}
+            <Link href="/reflex" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-red-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-red-50 w-fit p-3 rounded-xl">🦵</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-red-600">膝蓋腱反射シミュレーター</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  打撃が神経信号に変わり、筋肉を収縮させる「反射弓」のプロセスを完全可視化。
+                </p>
+                <span className="text-red-600 font-bold text-sm text-right">体験する →</span>
+              </div>
+            </Link>
+
+            {/* 脳トレ：シンボル・デコード (今回追加分) */}
+            <Link href="/simbol" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-blue-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-blue-50 w-fit p-3 rounded-xl text-blue-600">
+                  <Zap size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600">脳トレ：シンボル・デコード</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  記号と数字を素早く照合して脳の処理速度を鍛えるゲーム。60秒で何問解けるか挑戦！
+                </p>
+                <span className="text-blue-600 font-bold text-sm text-right">挑戦する →</span>
+              </div>
+            </Link>
 
           </div>
         </section>
 
       </div>
 
-      {/* ▼▼▼ Tech Labへの誘導バナー (ここに追加しました！) ▼▼▼ */}
+      {/* Tech Lab バナー */}
       <div className="mt-24 w-full max-w-4xl px-4">
         <div className="bg-slate-900 text-white p-10 rounded-3xl shadow-xl relative overflow-hidden group text-center">
-          
-          {/* 背景の装飾（ぼんやり光る青い丸） */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20 translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
-
           <div className="relative z-10">
             <h2 className="text-3xl font-bold mb-4 flex justify-center items-center gap-2">
               Tech Lab <span className="text-2xl">🧪</span>
@@ -151,7 +168,6 @@ export default function Home() {
             <p className="text-slate-300 mb-8 max-w-lg mx-auto leading-relaxed">
               ツールの裏側にある「計算ロジック」や、Next.jsを用いた「開発技術」を解説するブログエリアを開設しました。
             </p>
-            
             <Link 
               href="/blog" 
               className="inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full transition-all transform group-hover:scale-105 shadow-lg hover:shadow-blue-500/50"
@@ -161,7 +177,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      {/* ▲▲▲ 追加終わり ▲▲▲ */}
 
       <footer className="mt-20 text-slate-400 text-sm flex flex-wrap justify-center gap-6 pb-8">
         <Link href="/about" className="hover:text-slate-600 transition">運営者情報</Link>
