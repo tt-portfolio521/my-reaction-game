@@ -128,7 +128,6 @@ export default function Home() {
                 <span className="text-green-600 font-bold text-sm text-right">スキャンする →</span>
               </div>
             </Link>
-            // app/page.tsx の能力測定・脳トレセクションに追加
 <Link href="/quiz" className="group">
   <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-indigo-500 flex flex-col">
     <div className="text-4xl mb-4 bg-indigo-50 w-fit p-3 rounded-xl text-indigo-600">

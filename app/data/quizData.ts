@@ -1,6 +1,8 @@
+// app/data/quizData.ts
+
 export type Option = {
   text: string;
-  rationale: string; // 解説
+  rationale: string;
   isCorrect: boolean;
 };
 
@@ -11,81 +13,140 @@ export type Question = {
   hint: string;
 };
 
-export type QuizGenre = {
-  id: string; // URLになります (例: school, trivia, kanji)
-  title: string;
+export type DifficultyLevel = {
+  id: "easy" | "normal" | "hard";
+  title: string; // 例: "初級（低学年）"
   description: string;
-  icon: string; // 絵文字
-  color: string; // テーマカラー (Tailwindクラス)
   questions: Question[];
 };
 
-export const quizList: QuizGenre[] = [
+export type QuizSubject = {
+  id: string; // URLになります (例: kokugo, sansu)
+  title: string;
+  icon: string; // 絵文字
+  color: string; // テーマカラー
+  bg: string; // 背景色
+  difficulties: DifficultyLevel[];
+};
+
+export const quizData: QuizSubject[] = [
   {
-    id: "school",
-    title: "懐かしの小中学校クイズ",
-    description: "大人が意外と忘れている？歴史、理科、数学など、懐かしの教科から出題！",
-    icon: "🏫",
-    color: "bg-indigo-500",
-    questions: [
+    id: "kokugo",
+    title: "国語",
+    icon: "📕",
+    color: "text-red-600",
+    bg: "bg-red-50 hover:border-red-400",
+    difficulties: [
       {
-        questionNumber: 1,
-        question: "【社会・歴史】戦国時代を終わらせ、1603年に江戸幕府を開いた人物は誰でしょう？",
-        options: [
-          { text: "織田信長", rationale: "信長は室町幕府を滅ぼしましたが、道半ばで倒れました。", isCorrect: false },
-          { text: "豊臣秀吉", rationale: "秀吉は天下統一しましたが、幕府は開いていません。", isCorrect: false },
-          { text: "徳川家康", rationale: "正解！関ヶ原の戦いの後、征夷大将軍となり幕府を開きました。", isCorrect: true },
-          { text: "足利尊氏", rationale: "足利尊氏は室町幕府の初代将軍です。", isCorrect: false },
+        id: "easy",
+        title: "初級 (低学年)",
+        description: "漢字の読み書きや、ことわざの基本。",
+        questions: [
+          {
+            questionNumber: 1,
+            question: "「犬」の読み方は？",
+            options: [
+              { text: "ねこ", rationale: "それは🐱です。", isCorrect: false },
+              { text: "いぬ", rationale: "正解！", isCorrect: true },
+              { text: "とり", rationale: "それは🐦です。", isCorrect: false },
+              { text: "うし", rationale: "それは🐮です。", isCorrect: false },
+            ],
+            hint: "「い」から始まります。",
+          },
+          // ... 他の問題
         ],
-        hint: "「鳴かぬなら鳴くまで待とう...」",
       },
       {
-        questionNumber: 2,
-        question: "【理科・化学】青色のリトマス試験紙をある水溶液に浸したところ、赤色に変化しました。この水溶液の性質は何でしょう？",
-        options: [
-          { text: "酸性", rationale: "正解！「お母さん（青→赤＝酸）信号無視」などの覚え方があります。", isCorrect: true },
-          { text: "中性", rationale: "中性では色は変化しません。", isCorrect: false },
-          { text: "アルカリ性", rationale: "アルカリ性は赤から青に変化します。", isCorrect: false },
-          { text: "揮発性", rationale: "それは蒸発しやすい性質のことです。", isCorrect: false },
+        id: "normal",
+        title: "中級 (中学年)",
+        description: "熟語の構成や、少し難しい漢字。",
+        questions: [
+          /* 省略 */
         ],
-        hint: "レモンやお酢の性質です。",
       },
       {
-        questionNumber: 3,
-        question: "【国語・文学】「メロスは激怒した。」という書き出しで有名な、太宰治の小説のタイトルは何でしょう？",
-        options: [
-          { text: "羅生門", rationale: "羅生門は芥川龍之介の作品です。", isCorrect: false },
-          { text: "走れメロス", rationale: "正解！友との約束を守るために走り続ける物語です。", isCorrect: true },
-          { text: "山月記", rationale: "山月記は中島敦の作品（虎になる話）です。", isCorrect: false },
-          { text: "蜘蛛の糸", rationale: "蜘蛛の糸もお釈迦様が出てくる芥川龍之介の作品です。", isCorrect: false },
+        id: "hard",
+        title: "上級 (高学年)",
+        description: "敬語の使い方や、古文の基礎。",
+        questions: [
+          /* 省略 */
         ],
-        hint: "主人公の名前がそのままタイトルです。",
       },
-      {
-        questionNumber: 4,
-        question: "【算数・数学】円の面積を求める公式として正しいものはどれでしょう？（半径r, 円周率π）",
-        options: [
-          { text: "2πr", rationale: "それは円周の長さです。", isCorrect: false },
-          { text: "πr²", rationale: "正解！半径×半径×円周率ですね。", isCorrect: true },
-          { text: "0.5πr²", rationale: "それは半円の面積です。", isCorrect: false },
-          { text: "4πr²", rationale: "それは球の表面積です。", isCorrect: false },
-        ],
-        hint: "半径 × 半径 × ...",
-      },
-      {
-        questionNumber: 5,
-        question: "【英語】インターネットでよく使われる「SNS」は何の略でしょう？",
-        options: [
-          { text: "Social Networking Service", rationale: "正解！社会的な繋がりを作るサービスです。", isCorrect: true },
-          { text: "Super Network System", rationale: "強そうですが違います。", isCorrect: false },
-          { text: "Simple News Site", rationale: "ニュースサイトではありません。", isCorrect: false },
-          { text: "System Navigation Support", rationale: "システム用語っぽいですが違います。", isCorrect: false },
-        ],
-        hint: "SはSocialの略です。",
-      },
-      // ... 他の問題もここに追加 ...
     ],
   },
-  // 将来的にここに新しいジャンルを追加できます
-  // { id: "anime", title: "90年代アニメクイズ", ... }
+  {
+    id: "sansu",
+    title: "算数",
+    icon: "📐",
+    color: "text-blue-600",
+    bg: "bg-blue-50 hover:border-blue-400",
+    difficulties: [
+      {
+        id: "easy",
+        title: "初級 (低学年)",
+        description: "足し算、引き算、時計の読み方。",
+        questions: [
+          {
+            questionNumber: 1,
+            question: "5 + 8 はいくつ？",
+            options: [
+              { text: "12", rationale: "惜しい！", isCorrect: false },
+              { text: "13", rationale: "正解！", isCorrect: true },
+              { text: "14", rationale: "少し多いです。", isCorrect: false },
+              { text: "15", rationale: "多すぎます。", isCorrect: false },
+            ],
+            hint: "5に5を足すと10です。あと3残っています。",
+          },
+        ],
+      },
+      {
+        id: "normal",
+        title: "中級 (中学年)",
+        description: "割り算、少数、図形の面積。",
+        questions: [],
+      },
+      {
+        id: "hard",
+        title: "上級 (高学年)",
+        description: "分数、割合、立体の体積。",
+        questions: [],
+      },
+    ],
+  },
+  {
+    id: "eigo",
+    title: "英語",
+    icon: "🔤",
+    color: "text-orange-600",
+    bg: "bg-orange-50 hover:border-orange-400",
+    difficulties: [
+      { id: "easy", title: "初級", description: "アルファベットと簡単な単語。", questions: [] },
+      { id: "normal", title: "中級", description: "日常会話と基本的な文法。", questions: [] },
+      { id: "hard", title: "上級", description: "長文読解と少し複雑な表現。", questions: [] },
+    ],
+  },
+  {
+    id: "shakai",
+    title: "社会",
+    icon: "🌏",
+    color: "text-green-600",
+    bg: "bg-green-50 hover:border-green-400",
+    difficulties: [
+      { id: "easy", title: "初級", description: "身近な地域や生活について。", questions: [] },
+      { id: "normal", title: "中級", description: "都道府県や日本の産業。", questions: [] },
+      { id: "hard", title: "上級", description: "日本の歴史と政治・憲法。", questions: [] },
+    ],
+  },
+  {
+    id: "rika",
+    title: "理科",
+    icon: "🔬",
+    color: "text-purple-600",
+    bg: "bg-purple-50 hover:border-purple-400",
+    difficulties: [
+      { id: "easy", title: "初級", description: "植物、虫、磁石の性質。", questions: [] },
+      { id: "normal", title: "中級", description: "電気の働き、星の動き。", questions: [] },
+      { id: "hard", title: "上級", description: "水溶液、人体のつくり、てこ。", questions: [] },
+    ],
+  },
 ];
