@@ -4,11 +4,11 @@ import { useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, Share2, HelpCircle, ArrowRight } from "lucide-react";
-import { quizData } from "../../../data/quizData"; // 階層が深くなったので ../ が3つになります
+import { quizData } from "../../../data/quizData"; // 階層が深くなったので ../ が3つ
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function QuizPlayerPage({ params }: { params: { subject: string; level: string } }) {
-  // 1. データ検索 (教科IDと難易度IDからデータを特定)
+  // 1. データ検索
   const subject = quizData.find((s) => s.id === params.subject);
   const difficulty = subject?.difficulties.find((d) => d.id === params.level);
 
@@ -18,7 +18,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
 
   const questions = difficulty.questions;
   
-  // 2. 問題が0問の場合の表示（準備中画面）
+  // 2. 問題がない場合（準備中）
   if (questions.length === 0) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center font-sans text-slate-800">
@@ -32,7 +32,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     );
   }
 
-  // 3. ゲームの状態管理
+  // 3. ゲーム状態
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -43,7 +43,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
   const currentQuestion = questions[currentQIndex];
   const progress = ((currentQIndex) / questions.length) * 100;
 
-  // 回答処理
   const handleAnswer = (index: number) => {
     if (isAnswered) return;
     setSelectedOptionIndex(index);
@@ -53,7 +52,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     }
   };
 
-  // 次へ進む処理
   const handleNext = () => {
     if (currentQIndex + 1 < questions.length) {
       setCurrentQIndex(currentQIndex + 1);
@@ -65,7 +63,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     }
   };
 
-  // 最初からやり直す
   const handleRestart = () => {
     setCurrentQIndex(0);
     setScore(0);
@@ -75,7 +72,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     setShowHint(false);
   };
 
-  // Xでシェア
   const shareResult = () => {
     const text = `【${subject.title}クイズ：${difficulty.title}】\n全${questions.length}問中「${score}問」正解しました！\n#MyToolsBox #クイズ #脳トレ`;
     const url = window.location.href;
@@ -173,7 +169,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
           {/* 選択肢エリア */}
           <div className="space-y-3 mb-6">
             {currentQuestion.options.map((option, index) => {
-              // 判定ロジックによるスタイル切り替え
               let btnClass = "bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300";
               let icon = null;
 
@@ -203,7 +198,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
             })}
           </div>
 
-          {/* 解説エリア（回答後表示） */}
+          {/* 解説エリア */}
           <AnimatePresence>
             {isAnswered && (
               <motion.div 
