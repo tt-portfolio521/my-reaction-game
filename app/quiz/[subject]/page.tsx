@@ -1,13 +1,19 @@
 "use client";
 
+import React, { use } from "react"; // Reactのuseをインポート
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
-import { quizData } from "../../data/quizData"; // 階層は ../../
+import { quizData } from "../../data/quizData";
 
-export default function DifficultySelectPage({ params }: { params: { subject: string } }) {
-  // 教科データを検索
-  const subject = quizData.find((s) => s.id === params.subject);
+// ▼ 修正点1: 型定義を Promise に変更
+export default function DifficultySelectPage({ params }: { params: Promise<{ subject: string }> }) {
+  
+  // ▼ 修正点2: use() を使って params を取り出す（Next.js 15対応）
+  const { subject: subjectId } = use(params);
+
+  // ▼ 修正点3: 取り出した subjectId を使う
+  const subject = quizData.find((s) => s.id === subjectId);
 
   if (!subject) {
     notFound();

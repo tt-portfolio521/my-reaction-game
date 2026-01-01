@@ -1,26 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, use } from "react"; // use を追加
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, Share2, HelpCircle, ArrowRight } from "lucide-react";
-import { quizData } from "../../../data/quizData"; // 階層は ../../../
-
+import { quizData } from "../../../data/quizData";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function QuizPlayerPage({ params }: { params: { subject: string; level: string } }) {
-  // データ検索
-  const subject = quizData.find((s) => s.id === params.subject);
-  const difficulty = subject?.difficulties.find((d) => d.id === params.level);
+// ▼ 修正点1: params を Promise型に変更
+export default function QuizPlayerPage({ params }: { params: Promise<{ subject: string; level: string }> }) {
+  
+  // ▼ 修正点2: use() で中身を取り出す
+  const { subject: subjectId, level: levelId } = use(params);
+
+  // ▼ 修正点3: 取り出した変数を使う
+  const subject = quizData.find((s) => s.id === subjectId);
+  const difficulty = subject?.difficulties.find((d) => d.id === levelId);
 
   if (!subject || !difficulty) {
     notFound();
   }
 
+  // ... (これ以降のコードは変更ありません)
   const questions = difficulty.questions;
   
-  // 準備中画面
   if (questions.length === 0) {
+    // ... 準備中画面 ...
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center font-sans text-slate-800">
         <div className="text-6xl mb-4">🚧</div>
@@ -33,7 +38,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     );
   }
 
-  // ゲームの状態管理
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -96,6 +100,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
             <h2 className="text-3xl font-black text-slate-800">RESULT</h2>
             <p className="text-slate-500 font-bold text-sm mt-1">{subject.title} - {difficulty.title}</p>
           </div>
+          
           <div className="py-6 border-y border-slate-100">
             <div className="text-sm text-slate-400 font-bold mb-2">SCORE</div>
             <div className={`text-5xl font-black ${subject.color}`}>
@@ -103,6 +108,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
             </div>
             <p className="text-slate-600 mt-4 font-bold">{message}</p>
           </div>
+
           <div className="space-y-3">
              <button onClick={shareResult} className="w-full py-3 bg-black text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition">
               <Share2 size={18} /> 結果をシェアする
@@ -124,8 +130,10 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     );
   }
 
+  // --- プレイ画面 ---
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center py-8 px-4 font-sans text-slate-800">
+      
       <div className="w-full max-w-2xl flex justify-between items-center mb-6">
         <Link href={`/quiz/${subject.id}`} className="text-slate-400 hover:text-slate-600 p-2 bg-white rounded-full shadow-sm transition">
           <ArrowLeft size={20} />
@@ -141,6 +149,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
       </div>
 
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col min-h-[500px]">
+        
         <div className="w-full h-2 bg-slate-100">
           <motion.div 
             className={`h-full ${subject.color.replace('text-', 'bg-')}`}
@@ -151,6 +160,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
         </div>
 
         <div className="p-6 md:p-8 flex-grow flex flex-col">
+          
           <div className="mb-8">
              <h2 className="text-xl md:text-2xl font-bold text-slate-800 leading-relaxed">
                {currentQuestion.question}
