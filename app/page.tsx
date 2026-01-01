@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Metadata } from 'next';
-import { Zap, Grid3x3 } from "lucide-react"; // Grid3x3を追加
+import { Zap, Grid3x3, BookOpen } from "lucide-react"; // BookOpenを追加
 
 // トップページ用のSEO設定
 export const metadata: Metadata = {
@@ -128,6 +128,19 @@ export default function Home() {
                 <span className="text-green-600 font-bold text-sm text-right">スキャンする →</span>
               </div>
             </Link>
+            // app/page.tsx の能力測定・脳トレセクションに追加
+<Link href="/quiz" className="group">
+  <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-indigo-500 flex flex-col">
+    <div className="text-4xl mb-4 bg-indigo-50 w-fit p-3 rounded-xl text-indigo-600">
+      <BookOpen size={32} /> {/* BookOpenをimportしてください */}
+    </div>
+    <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-600">暇つぶしクイズ・道場</h3>
+    <p className="text-slate-500 text-sm mb-4 flex-grow">
+      懐かしの教科書クイズから雑学まで。隙間時間に遊べる全問正解チャレンジ！
+    </p>
+    <span className="text-indigo-600 font-bold text-sm text-right">問題を解く →</span>
+  </div>
+</Link>
 
           </div>
         </section>
