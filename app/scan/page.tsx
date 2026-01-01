@@ -2,13 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RotateCcw, Trophy, ArrowLeft, Grid3x3, Timer, MousePointerClick, Share2 } from "lucide-react"; // Share2を追加
+import { RotateCcw, Trophy, ArrowLeft, Grid3x3, Timer, Share2, Medal } from "lucide-react";
 import Link from "next/link";
-
-// ▼▼▼ SEO: メタデータ設定（Next.js App Routerのクライアント成分では直接export metadataできないため、layout.tsxかgenerateMetadataで設定するのが理想ですが、今回は簡易的にSEO用テキストを強化します）▼▼▼
-// ※注意: "use client" のファイルでは `export const metadata` は効きません。
-// 正しくは `app/scan/layout.tsx` を作るか、このページをServer ComponentとClient Componentに分ける必要があります。
-// しかし、今は手っ取り早く効果を出すため、ページ内の<h1>や<p>をガチガチに強化する方針で行きます。
 
 // 難易度設定
 const LEVELS = {
@@ -21,6 +16,7 @@ type LevelKey = keyof typeof LEVELS;
 type Position = { top: number; left: number };
 type Explosion = { id: number; x: number; y: number; color: string };
 
+// 💥 爆発エフェクト
 const ExplosionEffect = ({ x, y, color }: { x: number; y: number; color: string }) => {
   return (
     <div className="absolute pointer-events-none z-20" style={{ left: `${x}%`, top: `${y}%`, width: 0, height: 0 }}>
@@ -46,7 +42,7 @@ const ExplosionEffect = ({ x, y, color }: { x: number; y: number; color: string 
 };
 
 export default function NumberScanGame() {
-  const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
+  const [gameState, setGameState] = useState<"idle" | "countdown" | "playing" | "finished">("idle");
   const [level, setLevel] = useState<LevelKey>("level2");
   const [numbers, setNumbers] = useState<number[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
@@ -57,6 +53,27 @@ export default function NumberScanGame() {
   const [currentTime, setCurrentTime] = useState(0);
   const [penaltyTime, setPenaltyTime] = useState(0);
   const [shake, setShake] = useState(false);
+
+  // カウントダウン用
+  const [countDown, setCountDown] = useState(3);
+
+  // ベストタイム管理
+  const [bestTimes, setBestTimes] = useState<Record<LevelKey, number | null>>({
+    level1: null,
+    level2: null,
+    level3: null,
+  });
+  const [isNewRecord, setIsNewRecord] = useState(false);
+
+  // 初期化時にベストタイムを読み込み
+  useEffect(() => {
+    const loaded: Record<string, number | null> = { ...bestTimes };
+    (Object.keys(LEVELS) as LevelKey[]).forEach((key) => {
+      const saved = localStorage.getItem(`numberScan_${key}`);
+      if (saved) loaded[key] = parseInt(saved, 10);
+    });
+    setBestTimes(loaded);
+  }, []);
 
   const generatePositions = (count: number, btnSize: number): Position[] => {
     const newPositions: Position[] = [];
@@ -85,7 +102,8 @@ export default function NumberScanGame() {
     return newPositions;
   };
 
-  const startGame = (selectedLevel: LevelKey) => {
+  // ゲーム開始フロー（カウントダウン開始）
+  const startSequence = (selectedLevel: LevelKey) => {
     const setting = LEVELS[selectedLevel];
     const total = setting.count;
     const nums = Array.from({ length: total }, (_, i) => i + 1);
@@ -102,10 +120,29 @@ export default function NumberScanGame() {
     setPenaltyTime(0);
     setCurrentTime(0);
     setExplosions([]);
-    setGameState("playing");
-    setStartTime(Date.now());
+    setIsNewRecord(false);
+    
+    // カウントダウン開始
+    setCountDown(3);
+    setGameState("countdown");
   };
 
+  // カウントダウン処理
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (gameState === "countdown") {
+      if (countDown > 0) {
+        timer = setTimeout(() => setCountDown(countDown - 1), 600); // 0.6秒間隔でテンポよく
+      } else {
+        // カウントダウン終了 -> ゲーム開始
+        setGameState("playing");
+        setStartTime(Date.now());
+      }
+    }
+    return () => clearTimeout(timer);
+  }, [gameState, countDown]);
+
+  // タイマー処理
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (gameState === "playing") {
@@ -120,6 +157,7 @@ export default function NumberScanGame() {
     if (gameState !== "playing") return;
 
     if (num === nextNumber) {
+      // 正解
       const pos = positions[index];
       const btnSize = LEVELS[level].btnSize;
       const centerX = pos.left + btnSize / 2;
@@ -133,14 +171,28 @@ export default function NumberScanGame() {
 
       const total = LEVELS[level].count;
       if (num === total) {
-        setGameState("finished");
+        finishGame();
       } else {
         setNextNumber((prev) => prev + 1);
       }
     } else {
+      // 不正解
       setPenaltyTime((prev) => prev + 1000);
       setShake(true);
       setTimeout(() => setShake(false), 300);
+    }
+  };
+
+  const finishGame = () => {
+    const finalTime = currentTime;
+    setGameState("finished");
+    
+    // ベストタイム更新判定
+    const currentBest = bestTimes[level];
+    if (currentBest === null || finalTime < currentBest) {
+      setIsNewRecord(true);
+      setBestTimes((prev) => ({ ...prev, [level]: finalTime }));
+      localStorage.setItem(`numberScan_${level}`, finalTime.toString());
     }
   };
 
@@ -150,11 +202,10 @@ export default function NumberScanGame() {
     return `${seconds}.${centiseconds.toString().padStart(2, "0")}`;
   };
 
-  // ▼▼▼ X (Twitter) シェア機能 ▼▼▼
   const shareResult = () => {
     const time = formatTime(currentTime);
-    const text = `【暇つぶしゲーム】ナンバー・スキャン\n${LEVELS[level].label}を「${time}秒」でクリアしました！\n反射神経と周辺視野の限界に挑戦🔥\n#MyToolsBox #脳トレ #暇つぶし`;
-    const url = window.location.href; // 現在のURLを取得
+    const text = `【暇つぶしゲーム】ナンバー・スキャン\n${LEVELS[level].label}を「${time}秒」でクリアしました！\n${isNewRecord ? "🏆自己ベスト更新！\n" : ""}反射神経と周辺視野の限界に挑戦🔥\n#MyToolsBox #脳トレ #暇つぶし`;
+    const url = window.location.href;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
     window.open(twitterUrl, '_blank');
   };
@@ -192,10 +243,26 @@ export default function NumberScanGame() {
         {/* ゲームエリア */}
         <div className="p-4 md:p-6 flex-1 flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden">
           
+          {/* カウントダウン表示 */}
+          <AnimatePresence>
+            {gameState === "countdown" && (
+              <motion.div
+                key={countDown}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.5 }}
+                className="absolute inset-0 z-30 flex items-center justify-center bg-white/50 backdrop-blur-sm"
+              >
+                <div className="text-9xl font-black text-slate-900 drop-shadow-lg">
+                  {countDown === 0 ? "GO!" : countDown}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {gameState === "idle" ? (
             <div className="text-center space-y-8 max-w-md w-full relative z-10">
               <div className="space-y-4">
-                {/* SEO: タイトルに「暇つぶし」「ゲーム」を入れる */}
                 <h1 className="text-3xl md:text-4xl font-black text-slate-800 leading-tight">
                   暇つぶしに最適！<br/>ナンバー・スキャン
                 </h1>
@@ -204,49 +271,64 @@ export default function NumberScanGame() {
                 </p>
                 <div className="bg-white/80 p-4 rounded-xl text-sm text-slate-600 border border-slate-200">
                     数字を1から順にタップするだけ。<br/>
-                    通勤中や待ち時間の<strong className="text-orange-500">暇つぶし</strong>に、<br/>
-                    脳の処理速度を鍛えませんか？
+                    お手つきは<span className="text-red-500 font-bold">+1秒</span>ペナルティ。
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-3">
-                <button onClick={() => startGame("level1")} className="flex items-center gap-4 p-4 bg-white border-2 border-blue-100 hover:border-blue-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
-                    <div className="bg-blue-100 p-3 rounded-xl text-blue-600 group-hover:scale-110 transition-transform"><Grid3x3 /></div>
-                    <div>
-                        <div className="font-bold text-lg text-slate-800">LEVEL 1 (1~9)</div>
-                        <div className="text-xs text-slate-400">数字が大きくて見つけやすい</div>
+                {(Object.keys(LEVELS) as LevelKey[]).map((lvl) => (
+                  <button 
+                    key={lvl}
+                    onClick={() => startSequence(lvl)} 
+                    className="flex items-center gap-4 p-4 bg-white border-2 border-slate-100 hover:border-blue-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left relative overflow-hidden"
+                  >
+                    <div className={`${LEVELS[lvl].color.replace("bg-", "bg-opacity-10 bg-")} p-3 rounded-xl ${LEVELS[lvl].text} group-hover:scale-110 transition-transform`}>
+                      <Grid3x3 />
                     </div>
-                </button>
-                <button onClick={() => startGame("level2")} className="flex items-center gap-4 p-4 bg-white border-2 border-green-100 hover:border-green-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
-                    <div className="bg-green-100 p-3 rounded-xl text-green-600 group-hover:scale-110 transition-transform"><Grid3x3 /></div>
-                    <div>
-                        <div className="font-bold text-lg text-slate-800">LEVEL 2 (1~16)</div>
-                        <div className="text-xs text-slate-400">標準的な難易度</div>
+                    <div className="flex-1">
+                        <div className="font-bold text-lg text-slate-800">{LEVELS[lvl].label}</div>
+                        <div className="text-xs text-slate-400 flex items-center gap-1">
+                          {bestTimes[lvl] ? (
+                            <>
+                              <Medal size={12} className="text-yellow-500" />
+                              Best: <span className="font-mono">{formatTime(bestTimes[lvl] as number)}s</span>
+                            </>
+                          ) : (
+                            "No Record"
+                          )}
+                        </div>
                     </div>
-                </button>
-                <button onClick={() => startGame("level3")} className="flex items-center gap-4 p-4 bg-white border-2 border-orange-100 hover:border-orange-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
-                    <div className="bg-orange-100 p-3 rounded-xl text-orange-600 group-hover:scale-110 transition-transform"><Grid3x3 /></div>
-                    <div>
-                        <div className="font-bold text-lg text-slate-800">LEVEL 3 (1~25)</div>
-                        <div className="text-xs text-slate-400">数字が小さく散らばる</div>
+                    <div className="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity text-blue-500 font-bold">
+                        PLAY ▶
                     </div>
-                </button>
+                  </button>
+                ))}
               </div>
             </div>
           ) : gameState === "finished" ? (
             <div className="text-center space-y-6 animate-in zoom-in duration-300 relative z-10 w-full max-w-xs mx-auto">
-               <div className="bg-yellow-100 p-6 rounded-full text-yellow-600 mb-4 inline-block">
-                 <Trophy size={64} />
+               <div className="relative inline-block">
+                 <div className="bg-yellow-100 p-6 rounded-full text-yellow-600 mb-4">
+                   <Trophy size={64} />
+                 </div>
+                 {isNewRecord && (
+                   <motion.div 
+                     initial={{ scale: 0 }} animate={{ scale: 1 }} 
+                     className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full border-2 border-white shadow-sm rotate-12"
+                   >
+                     NEW RECORD!
+                   </motion.div>
+                 )}
                </div>
+               
                <h2 className="text-3xl font-bold">CLEAR!</h2>
                
-               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+               <div className={`bg-white p-6 rounded-2xl border-2 shadow-sm ${isNewRecord ? "border-yellow-400 bg-yellow-50" : "border-slate-200"}`}>
                  <div className="text-xs text-slate-400 font-bold uppercase mb-1">Result Time</div>
                  <div className="text-5xl font-black text-slate-800 tracking-tight">{formatTime(currentTime)}<span className="text-lg font-normal text-slate-400 ml-1">s</span></div>
-                 <div className="text-xs text-slate-400 mt-2 font-bold bg-slate-100 py-1 rounded">{LEVELS[level].label}</div>
+                 {isNewRecord && <div className="text-orange-500 font-bold text-sm mt-2 flex justify-center items-center gap-1">🎉 自己ベスト更新！</div>}
                </div>
 
-               {/* シェアボタン（重要） */}
                <button
                  onClick={shareResult}
                  className="w-full py-3 bg-black text-white rounded-xl font-bold shadow-lg hover:bg-slate-800 transition-transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
@@ -260,7 +342,7 @@ export default function NumberScanGame() {
                     戻る
                  </button>
                  <button
-                    onClick={() => startGame(level)}
+                    onClick={() => startSequence(level)}
                     className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
                 >
                     <RotateCcw size={18} />
@@ -298,13 +380,14 @@ export default function NumberScanGame() {
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                                 onClick={() => handleCardClick(num, i)}
                                 className={`
-                                    absolute rounded-full font-bold shadow-md border-b-4 active:border-b-0 active:translate-y-1 active:shadow-none transition-colors flex items-center justify-center select-none
+                                    absolute rounded-full font-bold shadow-md border-b-4 active:border-b-0 active:translate-y-1 active:shadow-none transition-colors flex items-center justify-center select-none cursor-pointer
                                     ${isCleared ? "pointer-events-none" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}
                                     ${level === "level3" ? "text-xl" : "text-2xl md:text-3xl"}
                                 `}
                                 style={{
                                     width: `${btnSize}%`,
                                     height: `${btnSize}%`,
+                                    WebkitTapHighlightColor: "transparent",
                                 }}
                             >
                                 {num}
@@ -318,7 +401,6 @@ export default function NumberScanGame() {
         </div>
       </div>
 
-      {/* SEO用コンテンツ（ここに暇つぶし関連ワードを盛り込む） */}
       <article className="mt-24 max-w-3xl w-full px-6 pb-20 text-slate-700">
         <h2 className="text-2xl font-bold text-slate-900 mb-6 border-b-4 border-green-500 inline-block pb-1">
           暇つぶしに最適！無料で遊べるブラウザゲーム
