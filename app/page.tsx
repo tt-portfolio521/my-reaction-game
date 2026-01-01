@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Metadata } from 'next';
-// Zapアイコンを追加でインポート
 import { Zap } from "lucide-react";
 
 // トップページ用のSEO設定
@@ -83,10 +82,10 @@ export default function Home() {
           </div>
         </section>
 
-        {/* カテゴリ2：能力・測定・その他 */}
+        {/* カテゴリ2：能力測定・脳トレ（分割しました） */}
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-800 border-b border-slate-200 pb-2">
-            <span className="text-3xl">⚡</span> 能力・測定・その他
+            <span className="text-3xl">⚡</span> 能力測定・脳トレ
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
@@ -101,6 +100,30 @@ export default function Home() {
                 <span className="text-amber-600 font-bold text-sm text-right">計測する →</span>
               </div>
             </Link>
+
+            {/* 脳トレ：シンボル・デコード */}
+            <Link href="/simbol" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-blue-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-blue-50 w-fit p-3 rounded-xl text-blue-600">
+                  <Zap size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600">脳トレ：シンボル・デコード</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  記号と数字を素早く照合して脳の処理速度を鍛えるゲーム。60秒で何問解けるか挑戦！
+                </p>
+                <span className="text-blue-600 font-bold text-sm text-right">挑戦する →</span>
+              </div>
+            </Link>
+
+          </div>
+        </section>
+
+        {/* カテゴリ3：バイオメカニクス・身体動作（分割しました） */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-800 border-b border-slate-200 pb-2">
+            <span className="text-3xl">🦾</span> バイオメカニクス・身体動作
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             {/* 関節トルク・シミュレーター */}
             <Link href="/torque" className="group">
@@ -135,20 +158,6 @@ export default function Home() {
                   打撃が神経信号に変わり、筋肉を収縮させる「反射弓」のプロセスを完全可視化。
                 </p>
                 <span className="text-red-600 font-bold text-sm text-right">体験する →</span>
-              </div>
-            </Link>
-
-            {/* 脳トレ：シンボル・デコード (今回追加分) */}
-            <Link href="/simbol" className="group">
-              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-blue-500 flex flex-col">
-                <div className="text-4xl mb-4 bg-blue-50 w-fit p-3 rounded-xl text-blue-600">
-                  <Zap size={32} />
-                </div>
-                <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600">脳トレ：シンボル・デコード</h3>
-                <p className="text-slate-500 text-sm mb-4 flex-grow">
-                  記号と数字を素早く照合して脳の処理速度を鍛えるゲーム。60秒で何問解けるか挑戦！
-                </p>
-                <span className="text-blue-600 font-bold text-sm text-right">挑戦する →</span>
               </div>
             </Link>
 
