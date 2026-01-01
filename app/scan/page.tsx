@@ -2,8 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RotateCcw, Trophy, ArrowLeft, Grid3x3, Timer, MousePointerClick } from "lucide-react";
+import { RotateCcw, Trophy, ArrowLeft, Grid3x3, Timer, MousePointerClick, Share2 } from "lucide-react"; // Share2を追加
 import Link from "next/link";
+
+// ▼▼▼ SEO: メタデータ設定（Next.js App Routerのクライアント成分では直接export metadataできないため、layout.tsxかgenerateMetadataで設定するのが理想ですが、今回は簡易的にSEO用テキストを強化します）▼▼▼
+// ※注意: "use client" のファイルでは `export const metadata` は効きません。
+// 正しくは `app/scan/layout.tsx` を作るか、このページをServer ComponentとClient Componentに分ける必要があります。
+// しかし、今は手っ取り早く効果を出すため、ページ内の<h1>や<p>をガチガチに強化する方針で行きます。
 
 // 難易度設定
 const LEVELS = {
@@ -16,32 +21,21 @@ type LevelKey = keyof typeof LEVELS;
 type Position = { top: number; left: number };
 type Explosion = { id: number; x: number; y: number; color: string };
 
-// 💥 爆発エフェクトコンポーネント
 const ExplosionEffect = ({ x, y, color }: { x: number; y: number; color: string }) => {
   return (
-    <div
-      className="absolute pointer-events-none z-20"
-      style={{ left: `${x}%`, top: `${y}%`, width: 0, height: 0 }}
-    >
+    <div className="absolute pointer-events-none z-20" style={{ left: `${x}%`, top: `${y}%`, width: 0, height: 0 }}>
       {[...Array(8)].map((_, i) => {
-        // 角度と距離をランダムに計算
-        const angle = (i * 45) + (Math.random() * 20 - 10); // 8方向にバラす
-        const dist = 30 + Math.random() * 30; // 飛び散る距離(px)
+        const angle = (i * 45) + (Math.random() * 20 - 10);
+        const dist = 30 + Math.random() * 30;
         const rad = (angle * Math.PI) / 180;
         const xMove = Math.cos(rad) * dist;
         const yMove = Math.sin(rad) * dist;
-
         return (
           <motion.div
             key={i}
             className={`absolute rounded-full ${color}`}
             initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-            animate={{
-              x: xMove,
-              y: yMove,
-              opacity: 0,
-              scale: 0,
-            }}
+            animate={{ x: xMove, y: yMove, opacity: 0, scale: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             style={{ width: 8, height: 8, marginLeft: -4, marginTop: -4 }}
           />
@@ -57,14 +51,13 @@ export default function NumberScanGame() {
   const [numbers, setNumbers] = useState<number[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [nextNumber, setNextNumber] = useState(1);
-  const [explosions, setExplosions] = useState<Explosion[]>([]); // 爆発管理用
+  const [explosions, setExplosions] = useState<Explosion[]>([]);
   
   const [startTime, setStartTime] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [penaltyTime, setPenaltyTime] = useState(0);
   const [shake, setShake] = useState(false);
 
-  // 座標生成 (変更なし)
   const generatePositions = (count: number, btnSize: number): Position[] => {
     const newPositions: Position[] = [];
     const maxAttempts = 500;
@@ -108,7 +101,7 @@ export default function NumberScanGame() {
     setNextNumber(1);
     setPenaltyTime(0);
     setCurrentTime(0);
-    setExplosions([]); // リセット
+    setExplosions([]);
     setGameState("playing");
     setStartTime(Date.now());
   };
@@ -123,42 +116,28 @@ export default function NumberScanGame() {
     return () => clearInterval(timer);
   }, [gameState, startTime, penaltyTime]);
 
-  // タップ処理 (修正：indexを受け取る)
   const handleCardClick = (num: number, index: number) => {
     if (gameState !== "playing") return;
 
     if (num === nextNumber) {
-      // --- 正解時の処理 ---
-      
-      // 1. 爆発エフェクトを追加
       const pos = positions[index];
       const btnSize = LEVELS[level].btnSize;
-      const centerX = pos.left + btnSize / 2; // ボタンの中心X(%)
-      const centerY = pos.top + btnSize / 2;  // ボタンの中心Y(%)
+      const centerX = pos.left + btnSize / 2;
+      const centerY = pos.top + btnSize / 2;
       
-      const newExplosion = { 
-        id: num, 
-        x: centerX, 
-        y: centerY, 
-        color: LEVELS[level].particle 
-      };
+      const newExplosion = { id: num, x: centerX, y: centerY, color: LEVELS[level].particle };
       setExplosions((prev) => [...prev, newExplosion]);
-
-      // 2. 一定時間後に爆発データを削除（メモリ管理）
       setTimeout(() => {
         setExplosions((prev) => prev.filter(e => e.id !== num));
       }, 500);
 
-      // 3. ゲーム進行
       const total = LEVELS[level].count;
       if (num === total) {
         setGameState("finished");
       } else {
         setNextNumber((prev) => prev + 1);
       }
-
     } else {
-      // --- 不正解時の処理 ---
       setPenaltyTime((prev) => prev + 1000);
       setShake(true);
       setTimeout(() => setShake(false), 300);
@@ -169,6 +148,15 @@ export default function NumberScanGame() {
     const seconds = Math.floor(ms / 1000);
     const centiseconds = Math.floor((ms % 1000) / 10);
     return `${seconds}.${centiseconds.toString().padStart(2, "0")}`;
+  };
+
+  // ▼▼▼ X (Twitter) シェア機能 ▼▼▼
+  const shareResult = () => {
+    const time = formatTime(currentTime);
+    const text = `【暇つぶしゲーム】ナンバー・スキャン\n${LEVELS[level].label}を「${time}秒」でクリアしました！\n反射神経と周辺視野の限界に挑戦🔥\n#MyToolsBox #脳トレ #暇つぶし`;
+    const url = window.location.href; // 現在のURLを取得
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank');
   };
 
   return (
@@ -206,13 +194,19 @@ export default function NumberScanGame() {
           
           {gameState === "idle" ? (
             <div className="text-center space-y-8 max-w-md w-full relative z-10">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-black text-slate-800">ナンバー・スキャン</h2>
-                <p className="text-slate-500 font-bold tracking-widest text-sm">ランダムに現れる数字を探せ</p>
-                <p className="text-slate-600 text-sm py-2">
-                    1から順番に数字を見つけてタップしてください。<br/>
-                    お手つきは<span className="text-red-500 font-bold">+1秒</span>のペナルティです。
+              <div className="space-y-4">
+                {/* SEO: タイトルに「暇つぶし」「ゲーム」を入れる */}
+                <h1 className="text-3xl md:text-4xl font-black text-slate-800 leading-tight">
+                  暇つぶしに最適！<br/>ナンバー・スキャン
+                </h1>
+                <p className="text-slate-500 font-bold tracking-widest text-sm">
+                  登録不要・1分で遊べる瞬間脳トレ
                 </p>
+                <div className="bg-white/80 p-4 rounded-xl text-sm text-slate-600 border border-slate-200">
+                    数字を1から順にタップするだけ。<br/>
+                    通勤中や待ち時間の<strong className="text-orange-500">暇つぶし</strong>に、<br/>
+                    脳の処理速度を鍛えませんか？
+                </div>
               </div>
 
               <div className="grid grid-cols-1 gap-3">
@@ -240,19 +234,28 @@ export default function NumberScanGame() {
               </div>
             </div>
           ) : gameState === "finished" ? (
-            <div className="text-center space-y-6 animate-in zoom-in duration-300 relative z-10">
+            <div className="text-center space-y-6 animate-in zoom-in duration-300 relative z-10 w-full max-w-xs mx-auto">
                <div className="bg-yellow-100 p-6 rounded-full text-yellow-600 mb-4 inline-block">
                  <Trophy size={64} />
                </div>
                <h2 className="text-3xl font-bold">CLEAR!</h2>
                
-               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm w-64 mx-auto">
-                 <div className="text-xs text-slate-400 font-bold uppercase mb-1">Time</div>
+               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                 <div className="text-xs text-slate-400 font-bold uppercase mb-1">Result Time</div>
                  <div className="text-5xl font-black text-slate-800 tracking-tight">{formatTime(currentTime)}<span className="text-lg font-normal text-slate-400 ml-1">s</span></div>
                  <div className="text-xs text-slate-400 mt-2 font-bold bg-slate-100 py-1 rounded">{LEVELS[level].label}</div>
                </div>
 
-               <div className="flex gap-4 justify-center mt-8">
+               {/* シェアボタン（重要） */}
+               <button
+                 onClick={shareResult}
+                 className="w-full py-3 bg-black text-white rounded-xl font-bold shadow-lg hover:bg-slate-800 transition-transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+               >
+                 <Share2 size={18} />
+                 Xでタイムを自慢する
+               </button>
+
+               <div className="flex gap-4 justify-center mt-4">
                  <button onClick={() => setGameState("idle")} className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition">
                     戻る
                  </button>
@@ -266,13 +269,11 @@ export default function NumberScanGame() {
                </div>
             </div>
           ) : (
-            // ゲームプレイエリア（枠なし）
             <motion.div 
                 className="relative w-full max-w-[400px] aspect-square"
                 animate={shake ? { x: [-5, 5, -5, 5, 0] } : {}}
                 transition={{ duration: 0.3 }}
             >
-                {/* 爆発エフェクトのレンダリング */}
                 {explosions.map((exp) => (
                   <ExplosionEffect key={exp.id} x={exp.x} y={exp.y} color={exp.color} />
                 ))}
@@ -290,12 +291,11 @@ export default function NumberScanGame() {
                                 initial={{ opacity: 0, scale: 0 }}
                                 animate={{ 
                                     opacity: isCleared ? 0 : 1, 
-                                    scale: isCleared ? 0.5 : 1, // 正解済みは小さくフェードアウト
+                                    scale: isCleared ? 0.5 : 1,
                                     top: `${pos.top}%`,
                                     left: `${pos.left}%`,
                                 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                // index(i) を渡して座標を特定できるようにする
                                 onClick={() => handleCardClick(num, i)}
                                 className={`
                                     absolute rounded-full font-bold shadow-md border-b-4 active:border-b-0 active:translate-y-1 active:shadow-none transition-colors flex items-center justify-center select-none
@@ -318,39 +318,46 @@ export default function NumberScanGame() {
         </div>
       </div>
 
-      {/* SEO用コンテンツ */}
+      {/* SEO用コンテンツ（ここに暇つぶし関連ワードを盛り込む） */}
       <article className="mt-24 max-w-3xl w-full px-6 pb-20 text-slate-700">
-        <h1 className="text-3xl font-bold text-slate-900 mb-6 border-b-4 border-green-500 inline-block pb-1">
-          ナンバー・スキャン | 周辺視野と探索速度のトレーニング
-        </h1>
+        <h2 className="text-2xl font-bold text-slate-900 mb-6 border-b-4 border-green-500 inline-block pb-1">
+          暇つぶしに最適！無料で遊べるブラウザゲーム
+        </h2>
         
         <p className="mb-10 text-lg leading-relaxed text-slate-600">
-          「ナンバー・スキャン」は、ランダムに配置された数字を順番に見つけ出し、タップする速さを競う脳トレゲームです。心理学的な実験手法「シュルテ・テーブル（Schulte Table）」をベースにしており、<strong>周辺視野の拡大</strong>と<strong>視覚的探索能力</strong>を鍛えることができます。
+          「ナンバー・スキャン」は、<strong>インストール不要</strong>・<strong>登録不要</strong>ですぐに遊べるシンプルな脳トレゲームです。
+          ルールは簡単、画面上にバラバラに配置された数字を1から順番にタップするだけ。
+          電車での移動中や、ちょっとした待ち時間の<strong>暇つぶし</strong>に最適です。
         </p>
 
         <section className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <span className="bg-green-100 text-green-600 p-2 rounded-lg text-xl">👁️</span>
-            トレーニングの効果
-          </h2>
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">周辺視野 (Peripheral Vision) の拡大</h3>
-              <p className="text-slate-600 leading-relaxed text-sm md:text-base">
-                一点を凝視するのではなく、ぼんやりと全体を眺めながら目的の数字を探すことで、視野の広さを鍛えます。これは速読スキルの向上や、スポーツにおける状況判断力の向上に役立ちます。
-              </p>
-            </div>
-            <div className="border-t border-slate-100 pt-6">
-              <h3 className="text-lg font-bold text-slate-900 mb-2">選択的注意 (Selective Attention)</h3>
-              <p className="text-slate-600 leading-relaxed text-sm md:text-base">
-                多数の妨害刺激（関係ない数字）の中から、特定のターゲット（次の数字）を瞬時に選び出す能力です。情報のノイズをカットし、必要な情報だけにフォーカスする集中力を養います。
-              </p>
-            </div>
+          <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span className="bg-green-100 text-green-600 p-2 rounded-lg text-xl">🚀</span>
+            なぜ「暇つぶし」におすすめ？
+          </h3>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <ul className="list-disc pl-5 space-y-2 text-slate-600">
+                <li><strong>1プレイ30秒〜1分：</strong> 短い時間でサクッと遊んで、すぐにやめられます。</li>
+                <li><strong>PCでもスマホでも：</strong> ブラウザさえあれば、デバイスを選ばずどこでもプレイ可能。</li>
+                <li><strong>適度な没頭感：</strong> シンプルですが、自己ベスト更新を目指すと意外とハマります。</li>
+            </ul>
           </div>
         </section>
 
+        <section className="mb-12">
+          <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span className="bg-blue-100 text-blue-600 p-2 rounded-lg text-xl">🧠</span>
+            遊ぶだけで脳トレ効果も
+          </h3>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            ただの暇つぶしではありません。このゲームは心理学的な実験手法「シュルテ・テーブル」をベースにしており、
+            <strong>周辺視野の拡大</strong>や<strong>情報処理速度の向上</strong>が期待できます。
+            スポーツの動体視力トレーニングや、速読の練習としても活用されています。
+          </p>
+        </section>
+
         <section className="bg-slate-100 p-8 rounded-3xl mt-16 text-center">
-          <h3 className="font-bold text-slate-800 mb-4">他の脳トレにも挑戦！</h3>
+          <h3 className="font-bold text-slate-800 mb-4">他の暇つぶしゲームにも挑戦！</h3>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="/simbol" className="bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-6 rounded-full shadow-sm border border-slate-200 transition">
               🧩 シンボル・デコード
