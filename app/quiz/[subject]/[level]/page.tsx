@@ -4,11 +4,12 @@ import { useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, Share2, HelpCircle, ArrowRight } from "lucide-react";
-import { quizData } from "../../../data/quizData"; // 階層が深くなったので ../ が3つ
+import { quizData } from "../../../data/quizData"; // 階層は ../../../
+
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function QuizPlayerPage({ params }: { params: { subject: string; level: string } }) {
-  // 1. データ検索
+  // データ検索
   const subject = quizData.find((s) => s.id === params.subject);
   const difficulty = subject?.difficulties.find((d) => d.id === params.level);
 
@@ -18,7 +19,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
 
   const questions = difficulty.questions;
   
-  // 2. 問題がない場合（準備中）
+  // 準備中画面
   if (questions.length === 0) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center font-sans text-slate-800">
@@ -32,7 +33,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     );
   }
 
-  // 3. ゲーム状態
+  // ゲームの状態管理
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -79,7 +80,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     window.open(twitterUrl, '_blank');
   };
 
-  // --- 結果画面 ---
   if (isFinished) {
     const percentage = Math.round((score / questions.length) * 100);
     let message = "";
@@ -96,7 +96,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
             <h2 className="text-3xl font-black text-slate-800">RESULT</h2>
             <p className="text-slate-500 font-bold text-sm mt-1">{subject.title} - {difficulty.title}</p>
           </div>
-          
           <div className="py-6 border-y border-slate-100">
             <div className="text-sm text-slate-400 font-bold mb-2">SCORE</div>
             <div className={`text-5xl font-black ${subject.color}`}>
@@ -104,7 +103,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
             </div>
             <p className="text-slate-600 mt-4 font-bold">{message}</p>
           </div>
-
           <div className="space-y-3">
              <button onClick={shareResult} className="w-full py-3 bg-black text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition">
               <Share2 size={18} /> 結果をシェアする
@@ -126,11 +124,8 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     );
   }
 
-  // --- プレイ画面 ---
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center py-8 px-4 font-sans text-slate-800">
-      
-      {/* ヘッダーエリア */}
       <div className="w-full max-w-2xl flex justify-between items-center mb-6">
         <Link href={`/quiz/${subject.id}`} className="text-slate-400 hover:text-slate-600 p-2 bg-white rounded-full shadow-sm transition">
           <ArrowLeft size={20} />
@@ -146,8 +141,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
       </div>
 
       <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col min-h-[500px]">
-        
-        {/* プログレスバー */}
         <div className="w-full h-2 bg-slate-100">
           <motion.div 
             className={`h-full ${subject.color.replace('text-', 'bg-')}`}
@@ -158,15 +151,12 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
         </div>
 
         <div className="p-6 md:p-8 flex-grow flex flex-col">
-          
-          {/* 問題文 */}
           <div className="mb-8">
              <h2 className="text-xl md:text-2xl font-bold text-slate-800 leading-relaxed">
                {currentQuestion.question}
              </h2>
           </div>
 
-          {/* 選択肢エリア */}
           <div className="space-y-3 mb-6">
             {currentQuestion.options.map((option, index) => {
               let btnClass = "bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300";
@@ -198,7 +188,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
             })}
           </div>
 
-          {/* 解説エリア */}
           <AnimatePresence>
             {isAnswered && (
               <motion.div 
@@ -220,7 +209,6 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
             )}
           </AnimatePresence>
 
-          {/* ヒント機能 */}
           {!isAnswered && (
              <div className="mt-auto pt-4 text-center">
                {!showHint ? (
