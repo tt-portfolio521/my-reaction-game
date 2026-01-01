@@ -48,8 +48,7 @@ export default function StretchReflexVisualizer() {
     }
   }, [phase, sensoryProgress, motorProgress]);
 
-  // --- 【修正箇所】パス上の座標を動的に取得する関数 ---
-  // pathRef の型に | null を追加し、progress の any を MotionValue<number> に変更
+  // パス上の座標を動的に取得する関数
   const usePathPosition = (pathRef: React.RefObject<SVGPathElement | null>, progress: MotionValue<number>) => {
     const x = useTransform(progress, (p) => {
       if (!pathRef.current) return 0;
@@ -92,7 +91,7 @@ export default function StretchReflexVisualizer() {
         🦵 膝蓋腱反射（伸張反射）シミュレーター
       </h3>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         <div className="relative bg-slate-50 rounded-2xl border border-slate-100 flex justify-center py-6 h-[400px]">
           <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="overflow-visible">
             
@@ -182,21 +181,26 @@ export default function StretchReflexVisualizer() {
         {/* 右側解説パネル */}
         <div className="space-y-6 text-slate-700">
           <div className="text-center">
-            <button onClick={triggerReflex} disabled={phase !== "idle"} className={`px-10 py-4 rounded-full font-bold text-lg transition-all ${phase === "idle" ? "bg-slate-900 text-white hover:bg-black shadow-lg hover:scale-105 active:scale-95" : "bg-slate-100 text-slate-400 cursor-not-allowed"}`} >腱を叩く（テスト実行）</button>
+            <button onClick={triggerReflex} disabled={phase !== "idle"} className={`w-full md:w-auto px-10 py-4 rounded-full font-bold text-lg transition-all ${phase === "idle" ? "bg-slate-900 text-white hover:bg-black shadow-lg hover:scale-105 active:scale-95" : "bg-slate-100 text-slate-400 cursor-not-allowed"}`} >腱を叩く（テスト実行）</button>
           </div>
           <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
             <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2"><span className="text-blue-500">●</span> 伸張反射のメカニズム</h4>
             <div className="space-y-4 text-sm leading-relaxed text-[13px]">
               <p>膝蓋腱を叩くと大腿四頭筋が急激に伸張されます。この変化を筋肉内の筋紡錘が感知し、信号が脊髄へ送られます。</p>
               
-
-[Image of the knee-jerk reflex arc]
-
-              <ul className="space-y-2 list-none p-0">
-                <li className="flex gap-2"><span className="font-bold text-blue-600">求心路:</span> <strong>Ia群求心性神経</strong>が信号を脊髄の灰白質へ伝達します。</li>
-                <li className="flex gap-2"><span className="font-bold text-red-600">遠心路:</span> 脊髄内で運動指令に変換され、<strong>α運動ニューロン</strong>が筋肉を収縮させます。</li>
+              {/* 修正箇所：flex を削除し、テキストの自然な折り返しを許可 */}
+              <ul className="space-y-3 list-none p-0 mt-4">
+                <li className="leading-relaxed">
+                  <span className="font-bold text-blue-600 mr-1">求心路:</span>
+                  <strong>Ia群求心性神経</strong>が信号を脊髄の灰白質へ伝達します。
+                </li>
+                <li className="leading-relaxed">
+                  <span className="font-bold text-red-600 mr-1">遠心路:</span>
+                  脊髄内で運動指令に変換され、<strong>α運動ニューロン</strong>が筋肉を収縮させます。
+                </li>
               </ul>
-              <p className="pt-2 border-t border-slate-200">これは脳を経由しない「不随意運動」であり、姿勢維持などに重要な役割を果たします。</p>
+              
+              <p className="pt-2 border-t border-slate-200 mt-2">これは脳を経由しない「不随意運動」であり、姿勢維持などに重要な役割を果たします。</p>
             </div>
           </div>
         </div>
