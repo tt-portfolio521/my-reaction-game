@@ -131,7 +131,7 @@ export default function SymbolDecodeGame() {
   }, [gameState, timeLeft]);
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center p-4 font-sans text-slate-800 transition-colors duration-500 ${isFever ? "bg-orange-50" : "bg-slate-50"}`}>
+    <div className={`min-h-screen flex flex-col items-center py-12 px-4 font-sans text-slate-800 transition-colors duration-500 ${isFever ? "bg-orange-50" : "bg-slate-50"}`}>
       
       {/* 戻るボタン */}
       <div className="absolute top-4 left-4 z-10">
@@ -141,6 +141,7 @@ export default function SymbolDecodeGame() {
         </Link>
       </div>
 
+      {/* --- ゲーム本体エリア --- */}
       <div className={`w-full max-w-2xl bg-white rounded-3xl shadow-xl border-4 overflow-hidden relative flex flex-col min-h-[600px] transition-all duration-300 ${isFever ? "border-orange-400 shadow-orange-200" : "border-slate-100"}`}>
         
         {/* ヘッダー */}
@@ -357,6 +358,72 @@ export default function SymbolDecodeGame() {
           )}
         </div>
       </div>
+
+      {/* ▼▼▼ 追加: SEO用コンテンツエリア ▼▼▼ */}
+      <article className="mt-24 max-w-3xl w-full px-6 pb-20 text-slate-700">
+        
+        {/* タイトル */}
+        <h1 className="text-3xl font-bold text-slate-900 mb-6 border-b-4 border-blue-500 inline-block pb-1">
+          脳トレ：シンボル・デコード | ワーキングメモリと処理速度を鍛える
+        </h1>
+        
+        <p className="mb-10 text-lg leading-relaxed text-slate-600">
+          記号と数字を素早く変換する「シンボル・デコード」は、脳の<strong>情報処理速度</strong>と<strong>注意制御機能</strong>を測定・向上させるための無料トレーニングツールです。60秒間でどれだけ正確に情報を処理できるか挑戦してみましょう。
+        </p>
+
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span className="bg-blue-100 text-blue-600 p-2 rounded-lg text-xl">🧠</span>
+            トレーニングの効果と科学的メカニズム
+          </h2>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">1. 処理速度 (Processing Speed) の向上</h3>
+              <p className="text-slate-600 leading-relaxed text-sm md:text-base">
+                視覚情報（記号）を認識し、ルール（凡例）と照らし合わせ、適切な運動（ボタン押し）へ変換する。この一連のプロセスを高速化することは、脳の神経回路の伝達効率を高めることに繋がります。WAIS-IVなどの知能検査における「処理速度指標 (PSI)」に関連する能力です。
+              </p>
+            </div>
+            <div className="border-t border-slate-100 pt-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">2. 注意の持続と切り替え</h3>
+              <p className="text-slate-600 leading-relaxed text-sm md:text-base">
+                制限時間60秒というプレッシャーの中で集中を持続させることは、前頭前野の重要な機能です。また、記号が変わるたびに認識をリセットし、新たな情報を処理する「注意の切り替え（セット・シフティング）」能力も同時に養われます。
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+            <span className="bg-orange-100 text-orange-600 p-2 rounded-lg text-xl">🔥</span>
+            ゲームシステムと高得点のコツ
+          </h2>
+          <div className="space-y-4 text-slate-600 leading-relaxed">
+            <p>
+              このゲームには、プレイヤーの集中を深めるための「没頭（フロー）システム」が搭載されています。
+            </p>
+            <ul className="list-disc pl-6 space-y-2 marker:text-blue-500">
+              <li><strong>コンボボーナス：</strong> ミスなく連続正解することでコンボが加算されます。</li>
+              <li><strong>フィーバーモード：</strong> 10コンボを達成すると「FEVER」状態に突入。スコアが2倍になり、背景や演出が変化します。この状態をいかに維持するかがハイスコアの鍵です。</li>
+              <li><strong>ミスによるペナルティ：</strong> お手付き（入力ミス）をするとコンボが0に戻り、フィーバーも終了してしまいます。速さだけでなく「正確さ」が求められます。</li>
+            </ul>
+          </div>
+        </section>
+        
+        {/* 内部リンク強化：他のツールへの誘導 */}
+        <section className="bg-slate-100 p-8 rounded-3xl mt-16 text-center">
+          <h3 className="font-bold text-slate-800 mb-4">他の能力も測定してみませんか？</h3>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/reaction" className="bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-6 rounded-full shadow-sm border border-slate-200 transition">
+              ⚡ 反射神経テスト
+            </Link>
+            <Link href="/reflex" className="bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-6 rounded-full shadow-sm border border-slate-200 transition">
+              🦵 伸張反射シミュレーター
+            </Link>
+          </div>
+        </section>
+
+      </article>
+
     </div>
   );
 }
