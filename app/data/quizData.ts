@@ -2,7 +2,7 @@
 
 export type Option = {
   text: string;
-  rationale: string;
+  rationale?: string; // 解説は任意項目に変更（?を追加）
   isCorrect: boolean;
 };
 
@@ -15,17 +15,17 @@ export type Question = {
 
 export type DifficultyLevel = {
   id: "easy" | "normal" | "hard";
-  title: string; // 例: "初級（低学年）"
+  title: string;
   description: string;
   questions: Question[];
 };
 
 export type QuizSubject = {
-  id: string; // URLになります (例: kokugo, sansu)
+  id: string; // URLパラメータと一致させる (例: kokugo)
   title: string;
-  icon: string; // 絵文字
-  color: string; // テーマカラー
-  bg: string; // 背景色
+  icon: string;
+  color: string; // テキスト色クラス
+  bg: string;    // 背景色クラス
   difficulties: DifficultyLevel[];
 };
 
@@ -35,7 +35,7 @@ export const quizData: QuizSubject[] = [
     title: "国語",
     icon: "📕",
     color: "text-red-600",
-    bg: "bg-red-50 hover:border-red-400",
+    bg: "bg-red-50",
     difficulties: [
       {
         id: "easy",
@@ -46,31 +46,37 @@ export const quizData: QuizSubject[] = [
             questionNumber: 1,
             question: "「犬」の読み方は？",
             options: [
-              { text: "ねこ", rationale: "それは🐱です。", isCorrect: false },
-              { text: "いぬ", rationale: "正解！", isCorrect: true },
-              { text: "とり", rationale: "それは🐦です。", isCorrect: false },
-              { text: "うし", rationale: "それは🐮です。", isCorrect: false },
+              { text: "ねこ", isCorrect: false },
+              { text: "いぬ", isCorrect: true, rationale: "正解です！「犬（いぬ）」ですね。" },
+              { text: "とり", isCorrect: false },
+              { text: "うし", isCorrect: false },
             ],
             hint: "「い」から始まります。",
           },
-          // ... 他の問題
+          {
+            questionNumber: 2,
+            question: "「林」という漢字は、「木」がいくつある？",
+            options: [
+              { text: "1つ", isCorrect: false },
+              { text: "2つ", isCorrect: true, rationale: "「木」が2つで「林（はやし）」、3つで「森（もり）」です。" },
+              { text: "3つ", isCorrect: false },
+              { text: "4つ", isCorrect: false },
+            ],
+            hint: "森（もり）よりは少ないです。",
+          },
         ],
       },
       {
         id: "normal",
         title: "中級 (中学年)",
         description: "熟語の構成や、少し難しい漢字。",
-        questions: [
-          /* 省略 */
-        ],
+        questions: [], // まだ問題なし
       },
       {
         id: "hard",
         title: "上級 (高学年)",
         description: "敬語の使い方や、古文の基礎。",
-        questions: [
-          /* 省略 */
-        ],
+        questions: [],
       },
     ],
   },
@@ -79,7 +85,7 @@ export const quizData: QuizSubject[] = [
     title: "算数",
     icon: "📐",
     color: "text-blue-600",
-    bg: "bg-blue-50 hover:border-blue-400",
+    bg: "bg-blue-50",
     difficulties: [
       {
         id: "easy",
@@ -90,10 +96,10 @@ export const quizData: QuizSubject[] = [
             questionNumber: 1,
             question: "5 + 8 はいくつ？",
             options: [
-              { text: "12", rationale: "惜しい！", isCorrect: false },
-              { text: "13", rationale: "正解！", isCorrect: true },
-              { text: "14", rationale: "少し多いです。", isCorrect: false },
-              { text: "15", rationale: "多すぎます。", isCorrect: false },
+              { text: "12", isCorrect: false },
+              { text: "13", isCorrect: true, rationale: "正解！ 5+8=13 です。" },
+              { text: "14", isCorrect: false },
+              { text: "15", isCorrect: false },
             ],
             hint: "5に5を足すと10です。あと3残っています。",
           },
@@ -118,7 +124,7 @@ export const quizData: QuizSubject[] = [
     title: "英語",
     icon: "🔤",
     color: "text-orange-600",
-    bg: "bg-orange-50 hover:border-orange-400",
+    bg: "bg-orange-50",
     difficulties: [
       { id: "easy", title: "初級", description: "アルファベットと簡単な単語。", questions: [] },
       { id: "normal", title: "中級", description: "日常会話と基本的な文法。", questions: [] },
@@ -130,7 +136,7 @@ export const quizData: QuizSubject[] = [
     title: "社会",
     icon: "🌏",
     color: "text-green-600",
-    bg: "bg-green-50 hover:border-green-400",
+    bg: "bg-green-50",
     difficulties: [
       { id: "easy", title: "初級", description: "身近な地域や生活について。", questions: [] },
       { id: "normal", title: "中級", description: "都道府県や日本の産業。", questions: [] },
@@ -142,7 +148,7 @@ export const quizData: QuizSubject[] = [
     title: "理科",
     icon: "🔬",
     color: "text-purple-600",
-    bg: "bg-purple-50 hover:border-purple-400",
+    bg: "bg-purple-50",
     difficulties: [
       { id: "easy", title: "初級", description: "植物、虫、磁石の性質。", questions: [] },
       { id: "normal", title: "中級", description: "電気の働き、星の動き。", questions: [] },
