@@ -6,10 +6,11 @@ import { RotateCcw, Trophy, ArrowLeft, Grid3x3, Timer, MousePointerClick } from 
 import Link from "next/link";
 
 // 難易度設定 (count: 数字の個数, btnSize: ボタンの幅%)
+// 重なりを防ぐため、ボタンサイズを全体的に小さく調整しました
 const LEVELS = {
-  level1: { count: 9, label: "LEVEL 1 (1~9)", color: "bg-blue-500", text: "text-blue-600", btnSize: 22 },
-  level2: { count: 16, label: "LEVEL 2 (1~16)", color: "bg-green-500", text: "text-green-600", btnSize: 17 },
-  level3: { count: 25, label: "LEVEL 3 (1~25)", color: "bg-orange-500", text: "text-orange-600", btnSize: 13 },
+  level1: { count: 9, label: "LEVEL 1 (1~9)", color: "bg-blue-500", text: "text-blue-600", btnSize: 18 },
+  level2: { count: 16, label: "LEVEL 2 (1~16)", color: "bg-green-500", text: "text-green-600", btnSize: 14 },
+  level3: { count: 25, label: "LEVEL 3 (1~25)", color: "bg-orange-500", text: "text-orange-600", btnSize: 10 },
 };
 
 type LevelKey = keyof typeof LEVELS;
@@ -21,7 +22,7 @@ export default function NumberScanGame() {
   const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
   const [level, setLevel] = useState<LevelKey>("level2");
   const [numbers, setNumbers] = useState<number[]>([]);
-  const [positions, setPositions] = useState<Position[]>([]); // 座標管理用
+  const [positions, setPositions] = useState<Position[]>([]);
   const [nextNumber, setNextNumber] = useState(1);
   
   // タイム計測用
@@ -32,26 +33,24 @@ export default function NumberScanGame() {
   // 演出用
   const [shake, setShake] = useState(false);
 
-  // 座標をランダム生成する関数（重なり防止ロジック付き）
+  // 座標をランダム生成する関数
   const generatePositions = (count: number, btnSize: number): Position[] => {
     const newPositions: Position[] = [];
-    const maxAttempts = 200; // 重なり回避の試行回数上限
+    const maxAttempts = 500; // 試行回数を増やして配置成功率を上げる
 
     for (let i = 0; i < count; i++) {
       let placed = false;
       let attempts = 0;
 
       while (!placed && attempts < maxAttempts) {
-        // 0% 〜 (100% - ボタンサイズ) の範囲でランダム配置
         const top = Math.random() * (100 - btnSize);
         const left = Math.random() * (100 - btnSize);
 
-        // 既存のボタンと重なっていないかチェック
-        // 少し余裕を持たせるため btnSize * 1.05 程度離す
+        // 重なりチェック（少し余裕を持たせて btnSize * 1.1 の距離を確保）
         const overlap = newPositions.some((pos) => {
           const xDist = Math.abs(pos.left - left);
           const yDist = Math.abs(pos.top - top);
-          return xDist < btnSize && yDist < btnSize;
+          return xDist < btnSize * 1.1 && yDist < btnSize * 1.1;
         });
 
         if (!overlap) {
@@ -61,7 +60,7 @@ export default function NumberScanGame() {
         attempts++;
       }
 
-      // どうしても場所が見つからない場合は諦めて適当に置く（無限ループ防止）
+      // 配置できなかった場合の救済（重なっても配置する）
       if (!placed) {
         newPositions.push({ 
           top: Math.random() * (100 - btnSize), 
@@ -77,16 +76,13 @@ export default function NumberScanGame() {
     const setting = LEVELS[selectedLevel];
     const total = setting.count;
     
-    // 1〜totalまでの数字を作成
     const nums = Array.from({ length: total }, (_, i) => i + 1);
-    // 数字をシャッフル（表示順序としてのシャッフル）
-    // ※今回は座標もランダムなので「どの座標にどの数字が入るか」もランダムになる
+    // 数字の順序をシャッフル
     for (let i = nums.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [nums[i], nums[j]] = [nums[j], nums[i]];
     }
 
-    // 座標を生成
     const pos = generatePositions(total, setting.btnSize);
 
     setNumbers(nums);
@@ -169,7 +165,7 @@ export default function NumberScanGame() {
         </div>
 
         {/* ゲームエリア */}
-        <div className="p-4 md:p-6 flex-1 flex flex-col items-center justify-center bg-slate-50/50 relative">
+        <div className="p-4 md:p-6 flex-1 flex flex-col items-center justify-center bg-slate-50 relative">
           
           {gameState === "idle" ? (
             <div className="text-center space-y-8 max-w-md w-full relative z-10">
@@ -233,16 +229,14 @@ export default function NumberScanGame() {
                </div>
             </div>
           ) : (
-            // ゲームプレイエリア（絶対配置のコンテナ）
-            // aspect-square で正方形を維持し、その中で % 配置を行う
+            // ゲームプレイエリア（枠線を削除し、背景に溶け込ませる）
             <motion.div 
-                className="relative w-full max-w-[400px] aspect-square bg-slate-100 rounded-2xl shadow-inner border border-slate-200"
+                className="relative w-full max-w-[400px] aspect-square" // bg-slate-100, border, shadow を削除
                 animate={shake ? { x: [-5, 5, -5, 5, 0] } : {}}
                 transition={{ duration: 0.3 }}
             >
                 <AnimatePresence>
                     {numbers.map((num, i) => {
-                        const isNext = num === nextNumber;
                         const isCleared = num < nextNumber;
                         const pos = positions[i] || { top: 0, left: 0 };
                         const btnSize = LEVELS[level].btnSize;
@@ -271,12 +265,7 @@ export default function NumberScanGame() {
                                 }}
                             >
                                 {num}
-                                {isNext && (
-                                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
-                                    </span>
-                                )}
+                                {/* 青いガイド（isNext）の表示を削除しました */}
                             </motion.button>
                         );
                     })}
