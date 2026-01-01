@@ -38,7 +38,7 @@ export default function ReflexPage() {
              <StretchReflexVisualizer />
            </div>
            <p className="text-center text-sm text-slate-400 mt-4 flex items-center justify-center gap-2">
-             <Zap size={14} /> ハンマーアイコンをクリックしてシミュレーションを開始
+             <Zap size={14} /> 腱を叩くアイコンをクリックしてシミュレーションを開始
            </p>
         </div>
 
