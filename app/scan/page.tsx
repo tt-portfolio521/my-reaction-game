@@ -1,47 +1,92 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, RotateCcw, Trophy, ArrowLeft, Grid3x3, Grid2x2, Timer, Eye, MousePointerClick } from "lucide-react";
+import { RotateCcw, Trophy, ArrowLeft, Grid3x3, Timer, MousePointerClick } from "lucide-react";
 import Link from "next/link";
 
-// 難易度設定
+// 難易度設定 (count: 数字の個数, btnSize: ボタンの幅%)
+// 重なりを防ぐため、ボタンサイズを全体的に小さく調整しました
 const LEVELS = {
-  easy: { size: 3, label: "EASY (3x3)", color: "bg-blue-500", border: "border-blue-200", text: "text-blue-600" },
-  normal: { size: 4, label: "NORMAL (4x4)", color: "bg-green-500", border: "border-green-200", text: "text-green-600" },
-  hard: { size: 5, label: "HARD (5x5)", color: "bg-orange-500", border: "border-orange-200", text: "text-orange-600" },
+  level1: { count: 9, label: "LEVEL 1 (1~9)", color: "bg-blue-500", text: "text-blue-600", btnSize: 18 },
+  level2: { count: 16, label: "LEVEL 2 (1~16)", color: "bg-green-500", text: "text-green-600", btnSize: 14 },
+  level3: { count: 25, label: "LEVEL 3 (1~25)", color: "bg-orange-500", text: "text-orange-600", btnSize: 10 },
 };
 
 type LevelKey = keyof typeof LEVELS;
 
+// 座標の型
+type Position = { top: number; left: number };
+
 export default function NumberScanGame() {
   const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
-  const [level, setLevel] = useState<LevelKey>("normal");
+  const [level, setLevel] = useState<LevelKey>("level2");
   const [numbers, setNumbers] = useState<number[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
   const [nextNumber, setNextNumber] = useState(1);
   
   // タイム計測用
   const [startTime, setStartTime] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [penaltyTime, setPenaltyTime] = useState(0); // ペナルティ加算用
+  const [penaltyTime, setPenaltyTime] = useState(0);
 
   // 演出用
-  const [shake, setShake] = useState(false); // 不正解時のシェイク
-  const [lastClickedPos, setLastClickedPos] = useState<{x:number, y:number} | null>(null);
+  const [shake, setShake] = useState(false);
+
+  // 座標をランダム生成する関数
+  const generatePositions = (count: number, btnSize: number): Position[] => {
+    const newPositions: Position[] = [];
+    const maxAttempts = 500; // 試行回数を増やして配置成功率を上げる
+
+    for (let i = 0; i < count; i++) {
+      let placed = false;
+      let attempts = 0;
+
+      while (!placed && attempts < maxAttempts) {
+        const top = Math.random() * (100 - btnSize);
+        const left = Math.random() * (100 - btnSize);
+
+        // 重なりチェック（少し余裕を持たせて btnSize * 1.1 の距離を確保）
+        const overlap = newPositions.some((pos) => {
+          const xDist = Math.abs(pos.left - left);
+          const yDist = Math.abs(pos.top - top);
+          return xDist < btnSize * 1.1 && yDist < btnSize * 1.1;
+        });
+
+        if (!overlap) {
+          newPositions.push({ top, left });
+          placed = true;
+        }
+        attempts++;
+      }
+
+      // 配置できなかった場合の救済（重なっても配置する）
+      if (!placed) {
+        newPositions.push({ 
+          top: Math.random() * (100 - btnSize), 
+          left: Math.random() * (100 - btnSize) 
+        });
+      }
+    }
+    return newPositions;
+  };
 
   // ゲーム開始
   const startGame = (selectedLevel: LevelKey) => {
-    const size = LEVELS[selectedLevel].size;
-    const total = size * size;
+    const setting = LEVELS[selectedLevel];
+    const total = setting.count;
     
-    // 1〜totalまでの数字を作成してシャッフル
     const nums = Array.from({ length: total }, (_, i) => i + 1);
+    // 数字の順序をシャッフル
     for (let i = nums.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [nums[i], nums[j]] = [nums[j], nums[i]];
     }
 
+    const pos = generatePositions(total, setting.btnSize);
+
     setNumbers(nums);
+    setPositions(pos);
     setLevel(selectedLevel);
     setNextNumber(1);
     setPenaltyTime(0);
@@ -50,53 +95,41 @@ export default function NumberScanGame() {
     setStartTime(Date.now());
   };
 
-  // タイマー処理 (10ミリ秒単位)
+  // タイマー処理
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (gameState === "playing") {
       timer = setInterval(() => {
-        // 現在時刻 - 開始時刻 + ペナルティ
         setCurrentTime(Date.now() - startTime + penaltyTime);
-      }, 30); // 描画更新頻度
+      }, 30);
     }
     return () => clearInterval(timer);
   }, [gameState, startTime, penaltyTime]);
 
   // タップ処理
-  const handleCardClick = (num: number, e: React.MouseEvent | React.TouchEvent) => {
+  const handleCardClick = (num: number) => {
     if (gameState !== "playing") return;
 
     if (num === nextNumber) {
       // 正解
-      // 座標を取得してエフェクト（今回はシンプルに波紋の代わりに正解音的な処理）
-      // 最後の数字ならクリア
-      const size = LEVELS[level].size;
-      if (num === size * size) {
+      const total = LEVELS[level].count;
+      if (num === total) {
         setGameState("finished");
       } else {
         setNextNumber((prev) => prev + 1);
       }
     } else {
-      // 不正解（ペナルティ）
-      setPenaltyTime((prev) => prev + 1000); // 1秒加算
+      // 不正解
+      setPenaltyTime((prev) => prev + 1000);
       setShake(true);
       setTimeout(() => setShake(false), 300);
     }
   };
 
-  // 時間のフォーマット (00.00)
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
     const centiseconds = Math.floor((ms % 1000) / 10);
     return `${seconds}.${centiseconds.toString().padStart(2, "0")}`;
-  };
-
-  // グリッドのクラス動的生成
-  const getGridClass = (size: number) => {
-    if (size === 3) return "grid-cols-3";
-    if (size === 4) return "grid-cols-4";
-    if (size === 5) return "grid-cols-5";
-    return "grid-cols-4";
   };
 
   return (
@@ -132,13 +165,13 @@ export default function NumberScanGame() {
         </div>
 
         {/* ゲームエリア */}
-        <div className="p-4 md:p-8 flex-1 flex flex-col items-center justify-center bg-slate-50/50">
+        <div className="p-4 md:p-6 flex-1 flex flex-col items-center justify-center bg-slate-50 relative">
           
           {gameState === "idle" ? (
-            <div className="text-center space-y-8 max-w-md w-full">
+            <div className="text-center space-y-8 max-w-md w-full relative z-10">
               <div className="space-y-2">
                 <h2 className="text-3xl font-black text-slate-800">ナンバー・スキャン</h2>
-                <p className="text-slate-500 font-bold tracking-widest text-sm">周辺視野と探索速度を鍛える</p>
+                <p className="text-slate-500 font-bold tracking-widest text-sm">ランダムに現れる数字を探せ</p>
                 <p className="text-slate-600 text-sm py-2">
                     1から順番に数字を見つけてタップしてください。<br/>
                     お手つきは<span className="text-red-500 font-bold">+1秒</span>のペナルティです。
@@ -146,31 +179,31 @@ export default function NumberScanGame() {
               </div>
 
               <div className="grid grid-cols-1 gap-3">
-                <button onClick={() => startGame("easy")} className="flex items-center gap-4 p-4 bg-white border-2 border-blue-100 hover:border-blue-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
-                    <div className="bg-blue-100 p-3 rounded-xl text-blue-600 group-hover:scale-110 transition-transform"><Grid2x2 /></div>
+                <button onClick={() => startGame("level1")} className="flex items-center gap-4 p-4 bg-white border-2 border-blue-100 hover:border-blue-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
+                    <div className="bg-blue-100 p-3 rounded-xl text-blue-600 group-hover:scale-110 transition-transform"><Grid3x3 /></div>
                     <div>
-                        <div className="font-bold text-lg text-slate-800">EASY (3x3)</div>
-                        <div className="text-xs text-slate-400">初心者向け / リハビリに</div>
+                        <div className="font-bold text-lg text-slate-800">LEVEL 1 (1~9)</div>
+                        <div className="text-xs text-slate-400">数字が大きくて見つけやすい</div>
                     </div>
                 </button>
-                <button onClick={() => startGame("normal")} className="flex items-center gap-4 p-4 bg-white border-2 border-green-100 hover:border-green-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
+                <button onClick={() => startGame("level2")} className="flex items-center gap-4 p-4 bg-white border-2 border-green-100 hover:border-green-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
                     <div className="bg-green-100 p-3 rounded-xl text-green-600 group-hover:scale-110 transition-transform"><Grid3x3 /></div>
                     <div>
-                        <div className="font-bold text-lg text-slate-800">NORMAL (4x4)</div>
-                        <div className="text-xs text-slate-400">一般的な難易度</div>
+                        <div className="font-bold text-lg text-slate-800">LEVEL 2 (1~16)</div>
+                        <div className="text-xs text-slate-400">標準的な難易度</div>
                     </div>
                 </button>
-                <button onClick={() => startGame("hard")} className="flex items-center gap-4 p-4 bg-white border-2 border-orange-100 hover:border-orange-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
+                <button onClick={() => startGame("level3")} className="flex items-center gap-4 p-4 bg-white border-2 border-orange-100 hover:border-orange-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
                     <div className="bg-orange-100 p-3 rounded-xl text-orange-600 group-hover:scale-110 transition-transform"><Grid3x3 /></div>
                     <div>
-                        <div className="font-bold text-lg text-slate-800">HARD (5x5)</div>
-                        <div className="text-xs text-slate-400">周辺視野の限界に挑戦</div>
+                        <div className="font-bold text-lg text-slate-800">LEVEL 3 (1~25)</div>
+                        <div className="text-xs text-slate-400">数字が小さく散らばる</div>
                     </div>
                 </button>
               </div>
             </div>
           ) : gameState === "finished" ? (
-            <div className="text-center space-y-6 animate-in zoom-in duration-300">
+            <div className="text-center space-y-6 animate-in zoom-in duration-300 relative z-10">
                <div className="bg-yellow-100 p-6 rounded-full text-yellow-600 mb-4 inline-block">
                  <Trophy size={64} />
                </div>
@@ -196,39 +229,43 @@ export default function NumberScanGame() {
                </div>
             </div>
           ) : (
+            // ゲームプレイエリア（枠線を削除し、背景に溶け込ませる）
             <motion.div 
-                className={`grid gap-3 w-full max-w-md aspect-square ${getGridClass(LEVELS[level].size)}`}
+                className="relative w-full max-w-[400px] aspect-square" // bg-slate-100, border, shadow を削除
                 animate={shake ? { x: [-5, 5, -5, 5, 0] } : {}}
                 transition={{ duration: 0.3 }}
             >
                 <AnimatePresence>
-                    {numbers.map((num) => {
-                        const isNext = num === nextNumber;
+                    {numbers.map((num, i) => {
                         const isCleared = num < nextNumber;
+                        const pos = positions[i] || { top: 0, left: 0 };
+                        const btnSize = LEVELS[level].btnSize;
                         
                         return (
                             <motion.button
                                 key={num}
                                 layout
-                                initial={{ opacity: 0, scale: 0.5 }}
+                                initial={{ opacity: 0, scale: 0 }}
                                 animate={{ 
                                     opacity: isCleared ? 0 : 1, 
-                                    scale: isCleared ? 0.8 : 1,
+                                    scale: isCleared ? 0.5 : 1,
+                                    top: `${pos.top}%`,
+                                    left: `${pos.left}%`,
                                 }}
-                                onClick={(e) => handleCardClick(num, e)}
+                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                onClick={() => handleCardClick(num)}
                                 className={`
-                                    relative rounded-xl font-bold shadow-sm border-b-4 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center select-none
-                                    ${isCleared ? "pointer-events-none" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"}
-                                    ${level === "hard" ? "text-2xl" : "text-3xl md:text-4xl"}
+                                    absolute rounded-full font-bold shadow-md border-b-4 active:border-b-0 active:translate-y-1 active:shadow-none transition-colors flex items-center justify-center select-none
+                                    ${isCleared ? "pointer-events-none" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}
+                                    ${level === "level3" ? "text-xl" : "text-2xl md:text-3xl"}
                                 `}
+                                style={{
+                                    width: `${btnSize}%`,
+                                    height: `${btnSize}%`,
+                                }}
                             >
                                 {num}
-                                {isNext && (
-                                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
-                                    </span>
-                                )}
+                                {/* 青いガイド（isNext）の表示を削除しました */}
                             </motion.button>
                         );
                     })}

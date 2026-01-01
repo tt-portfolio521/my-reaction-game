@@ -1,325 +1,213 @@
-"use client";
-
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { RotateCcw, Trophy, ArrowLeft, Grid3x3, Timer, MousePointerClick } from "lucide-react";
 import Link from "next/link";
+import { Metadata } from 'next';
+import { Zap, Grid3x3 } from "lucide-react"; // Grid3x3を追加
 
-// 難易度設定 (count: 数字の個数, btnSize: ボタンの幅%)
-// 重なりを防ぐため、ボタンサイズを全体的に小さく調整しました
-const LEVELS = {
-  level1: { count: 9, label: "LEVEL 1 (1~9)", color: "bg-blue-500", text: "text-blue-600", btnSize: 18 },
-  level2: { count: 16, label: "LEVEL 2 (1~16)", color: "bg-green-500", text: "text-green-600", btnSize: 14 },
-  level3: { count: 25, label: "LEVEL 3 (1~25)", color: "bg-orange-500", text: "text-orange-600", btnSize: 10 },
+// トップページ用のSEO設定
+export const metadata: Metadata = {
+  title: 'My Tools Box | 便利ツール・シミュレーター集',
+  description: '生活や学習に役立つ計算ツール・シミュレーター集。資産運用、ローン返済、減価償却、反射神経テストなど、データを可視化するツールを無料で公開しています。',
 };
 
-type LevelKey = keyof typeof LEVELS;
-
-// 座標の型
-type Position = { top: number; left: number };
-
-export default function NumberScanGame() {
-  const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
-  const [level, setLevel] = useState<LevelKey>("level2");
-  const [numbers, setNumbers] = useState<number[]>([]);
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [nextNumber, setNextNumber] = useState(1);
-  
-  // タイム計測用
-  const [startTime, setStartTime] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [penaltyTime, setPenaltyTime] = useState(0);
-
-  // 演出用
-  const [shake, setShake] = useState(false);
-
-  // 座標をランダム生成する関数
-  const generatePositions = (count: number, btnSize: number): Position[] => {
-    const newPositions: Position[] = [];
-    const maxAttempts = 500; // 試行回数を増やして配置成功率を上げる
-
-    for (let i = 0; i < count; i++) {
-      let placed = false;
-      let attempts = 0;
-
-      while (!placed && attempts < maxAttempts) {
-        const top = Math.random() * (100 - btnSize);
-        const left = Math.random() * (100 - btnSize);
-
-        // 重なりチェック（少し余裕を持たせて btnSize * 1.1 の距離を確保）
-        const overlap = newPositions.some((pos) => {
-          const xDist = Math.abs(pos.left - left);
-          const yDist = Math.abs(pos.top - top);
-          return xDist < btnSize * 1.1 && yDist < btnSize * 1.1;
-        });
-
-        if (!overlap) {
-          newPositions.push({ top, left });
-          placed = true;
-        }
-        attempts++;
-      }
-
-      // 配置できなかった場合の救済（重なっても配置する）
-      if (!placed) {
-        newPositions.push({ 
-          top: Math.random() * (100 - btnSize), 
-          left: Math.random() * (100 - btnSize) 
-        });
-      }
-    }
-    return newPositions;
-  };
-
-  // ゲーム開始
-  const startGame = (selectedLevel: LevelKey) => {
-    const setting = LEVELS[selectedLevel];
-    const total = setting.count;
-    
-    const nums = Array.from({ length: total }, (_, i) => i + 1);
-    // 数字の順序をシャッフル
-    for (let i = nums.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [nums[i], nums[j]] = [nums[j], nums[i]];
-    }
-
-    const pos = generatePositions(total, setting.btnSize);
-
-    setNumbers(nums);
-    setPositions(pos);
-    setLevel(selectedLevel);
-    setNextNumber(1);
-    setPenaltyTime(0);
-    setCurrentTime(0);
-    setGameState("playing");
-    setStartTime(Date.now());
-  };
-
-  // タイマー処理
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (gameState === "playing") {
-      timer = setInterval(() => {
-        setCurrentTime(Date.now() - startTime + penaltyTime);
-      }, 30);
-    }
-    return () => clearInterval(timer);
-  }, [gameState, startTime, penaltyTime]);
-
-  // タップ処理
-  const handleCardClick = (num: number) => {
-    if (gameState !== "playing") return;
-
-    if (num === nextNumber) {
-      // 正解
-      const total = LEVELS[level].count;
-      if (num === total) {
-        setGameState("finished");
-      } else {
-        setNextNumber((prev) => prev + 1);
-      }
-    } else {
-      // 不正解
-      setPenaltyTime((prev) => prev + 1000);
-      setShake(true);
-      setTimeout(() => setShake(false), 300);
-    }
-  };
-
-  const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const centiseconds = Math.floor((ms % 1000) / 10);
-    return `${seconds}.${centiseconds.toString().padStart(2, "0")}`;
-  };
-
+export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col items-center py-12 px-4 font-sans text-slate-800 bg-slate-50">
+    <main className="min-h-screen bg-slate-50 flex flex-col items-center p-8 text-slate-800 font-sans">
       
-      {/* 戻るボタン */}
-      <div className="absolute top-4 left-4 z-10">
-        <Link href="/" className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold bg-white/80 px-4 py-2 rounded-full shadow-sm hover:shadow transition-all">
-          <ArrowLeft size={18} />
-          <span>ホームへ</span>
-        </Link>
-      </div>
-
-      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl border-4 border-slate-100 overflow-hidden relative flex flex-col min-h-[600px]">
-        
-        {/* ヘッダー */}
-        <div className="bg-slate-900 text-white p-4 flex justify-between items-center z-20 relative">
-          <div className="flex flex-col">
-            <span className="text-xs font-bold opacity-60">NEXT</span>
-            <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-mono font-bold leading-none text-yellow-400">
-                    {gameState === "finished" ? "END" : nextNumber}
-                </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-end">
-            <span className="text-xs font-bold opacity-60">TIME</span>
-            <span className={`text-4xl font-mono font-bold leading-none ${shake ? "text-red-500" : "text-white"}`}>
-              {formatTime(currentTime)}
-            </span>
-          </div>
-        </div>
-
-        {/* ゲームエリア */}
-        <div className="p-4 md:p-6 flex-1 flex flex-col items-center justify-center bg-slate-50 relative">
-          
-          {gameState === "idle" ? (
-            <div className="text-center space-y-8 max-w-md w-full relative z-10">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-black text-slate-800">ナンバー・スキャン</h2>
-                <p className="text-slate-500 font-bold tracking-widest text-sm">ランダムに現れる数字を探せ</p>
-                <p className="text-slate-600 text-sm py-2">
-                    1から順番に数字を見つけてタップしてください。<br/>
-                    お手つきは<span className="text-red-500 font-bold">+1秒</span>のペナルティです。
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                <button onClick={() => startGame("level1")} className="flex items-center gap-4 p-4 bg-white border-2 border-blue-100 hover:border-blue-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
-                    <div className="bg-blue-100 p-3 rounded-xl text-blue-600 group-hover:scale-110 transition-transform"><Grid3x3 /></div>
-                    <div>
-                        <div className="font-bold text-lg text-slate-800">LEVEL 1 (1~9)</div>
-                        <div className="text-xs text-slate-400">数字が大きくて見つけやすい</div>
-                    </div>
-                </button>
-                <button onClick={() => startGame("level2")} className="flex items-center gap-4 p-4 bg-white border-2 border-green-100 hover:border-green-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
-                    <div className="bg-green-100 p-3 rounded-xl text-green-600 group-hover:scale-110 transition-transform"><Grid3x3 /></div>
-                    <div>
-                        <div className="font-bold text-lg text-slate-800">LEVEL 2 (1~16)</div>
-                        <div className="text-xs text-slate-400">標準的な難易度</div>
-                    </div>
-                </button>
-                <button onClick={() => startGame("level3")} className="flex items-center gap-4 p-4 bg-white border-2 border-orange-100 hover:border-orange-400 rounded-2xl shadow-sm hover:shadow-md transition-all group text-left">
-                    <div className="bg-orange-100 p-3 rounded-xl text-orange-600 group-hover:scale-110 transition-transform"><Grid3x3 /></div>
-                    <div>
-                        <div className="font-bold text-lg text-slate-800">LEVEL 3 (1~25)</div>
-                        <div className="text-xs text-slate-400">数字が小さく散らばる</div>
-                    </div>
-                </button>
-              </div>
-            </div>
-          ) : gameState === "finished" ? (
-            <div className="text-center space-y-6 animate-in zoom-in duration-300 relative z-10">
-               <div className="bg-yellow-100 p-6 rounded-full text-yellow-600 mb-4 inline-block">
-                 <Trophy size={64} />
-               </div>
-               <h2 className="text-3xl font-bold">CLEAR!</h2>
-               
-               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm w-64 mx-auto">
-                 <div className="text-xs text-slate-400 font-bold uppercase mb-1">Time</div>
-                 <div className="text-5xl font-black text-slate-800 tracking-tight">{formatTime(currentTime)}<span className="text-lg font-normal text-slate-400 ml-1">s</span></div>
-                 <div className="text-xs text-slate-400 mt-2 font-bold bg-slate-100 py-1 rounded">{LEVELS[level].label}</div>
-               </div>
-
-               <div className="flex gap-4 justify-center mt-8">
-                 <button onClick={() => setGameState("idle")} className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-200 transition">
-                    戻る
-                 </button>
-                 <button
-                    onClick={() => startGame(level)}
-                    className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center gap-2"
-                >
-                    <RotateCcw size={18} />
-                    もう一度
-                </button>
-               </div>
-            </div>
-          ) : (
-            // ゲームプレイエリア（枠線を削除し、背景に溶け込ませる）
-            <motion.div 
-                className="relative w-full max-w-[400px] aspect-square" // bg-slate-100, border, shadow を削除
-                animate={shake ? { x: [-5, 5, -5, 5, 0] } : {}}
-                transition={{ duration: 0.3 }}
-            >
-                <AnimatePresence>
-                    {numbers.map((num, i) => {
-                        const isCleared = num < nextNumber;
-                        const pos = positions[i] || { top: 0, left: 0 };
-                        const btnSize = LEVELS[level].btnSize;
-                        
-                        return (
-                            <motion.button
-                                key={num}
-                                layout
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{ 
-                                    opacity: isCleared ? 0 : 1, 
-                                    scale: isCleared ? 0.5 : 1,
-                                    top: `${pos.top}%`,
-                                    left: `${pos.left}%`,
-                                }}
-                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                onClick={() => handleCardClick(num)}
-                                className={`
-                                    absolute rounded-full font-bold shadow-md border-b-4 active:border-b-0 active:translate-y-1 active:shadow-none transition-colors flex items-center justify-center select-none
-                                    ${isCleared ? "pointer-events-none" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}
-                                    ${level === "level3" ? "text-xl" : "text-2xl md:text-3xl"}
-                                `}
-                                style={{
-                                    width: `${btnSize}%`,
-                                    height: `${btnSize}%`,
-                                }}
-                            >
-                                {num}
-                                {/* 青いガイド（isNext）の表示を削除しました */}
-                            </motion.button>
-                        );
-                    })}
-                </AnimatePresence>
-            </motion.div>
-          )}
-
-        </div>
-      </div>
-
-      {/* SEO用コンテンツ */}
-      <article className="mt-24 max-w-3xl w-full px-6 pb-20 text-slate-700">
-        <h1 className="text-3xl font-bold text-slate-900 mb-6 border-b-4 border-green-500 inline-block pb-1">
-          ナンバー・スキャン | 周辺視野と探索速度のトレーニング
-        </h1>
-        
-        <p className="mb-10 text-lg leading-relaxed text-slate-600">
-          「ナンバー・スキャン」は、ランダムに配置された数字を順番に見つけ出し、タップする速さを競う脳トレゲームです。心理学的な実験手法「シュルテ・テーブル（Schulte Table）」をベースにしており、<strong>周辺視野の拡大</strong>と<strong>視覚的探索能力</strong>を鍛えることができます。
+      {/* サイトヘッダー */}
+      <header className="mb-12 text-center max-w-2xl mt-8">
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-slate-900 tracking-tight">My Tools Box</h1>
+        <p className="text-slate-600 leading-relaxed text-lg">
+          学習や生活に役立つ計算ツール・シミュレーター集。<br/>
+          「数値」と「グラフ」で、あなたの意思決定をサポートします。
         </p>
+      </header>
 
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <span className="bg-green-100 text-green-600 p-2 rounded-lg text-xl">👁️</span>
-            トレーニングの効果
+      {/* ツール一覧エリア */}
+      <div className="max-w-6xl w-full space-y-16">
+
+        {/* カテゴリ1：お金・会計・ビジネス */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-800 border-b border-slate-200 pb-2">
+            <span className="text-3xl">💰</span> お金・会計・ビジネス
           </h2>
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">周辺視野 (Peripheral Vision) の拡大</h3>
-              <p className="text-slate-600 leading-relaxed text-sm md:text-base">
-                一点を凝視するのではなく、ぼんやりと全体を眺めながら目的の数字を探すことで、視野の広さを鍛えます。これは速読スキルの向上や、スポーツにおける状況判断力の向上に役立ちます。
-              </p>
-            </div>
-            <div className="border-t border-slate-100 pt-6">
-              <h3 className="text-lg font-bold text-slate-900 mb-2">選択的注意 (Selective Attention)</h3>
-              <p className="text-slate-600 leading-relaxed text-sm md:text-base">
-                多数の妨害刺激（関係ない数字）の中から、特定のターゲット（次の数字）を瞬時に選び出す能力です。情報のノイズをカットし、必要な情報だけにフォーカスする集中力を養います。
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* 資産運用シミュレーター */}
+            <Link href="/investment" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-blue-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-blue-50 w-fit p-3 rounded-xl">📈</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600">資産運用シミュレーター</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  積立投資の複利効果をグラフで可視化。S&P500やオルカンを想定した長期シミュレーションに。
+                </p>
+                <span className="text-blue-600 font-bold text-sm text-right">計算する →</span>
+              </div>
+            </Link>
+
+            {/* ローン返済シミュレーター */}
+            <Link href="/loan" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-indigo-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-indigo-50 w-fit p-3 rounded-xl">🏠</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-indigo-600">ローン返済計算機</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  住宅・カーローンの返済額を計算。「元金」と「利息」の割合推移をグラフで見える化。
+                </p>
+                <span className="text-indigo-600 font-bold text-sm text-right">計算する →</span>
+              </div>
+            </Link>
+
+            {/* 減価償却シミュレーター */}
+            <Link href="/depreciation" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-emerald-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-emerald-50 w-fit p-3 rounded-xl">📉</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-emerald-600">減価償却計算機</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  定額法・定率法の違いを比較。簿記学習や経理実務に役立つ資産価値シミュレーション。
+                </p>
+                <span className="text-emerald-600 font-bold text-sm text-right">計算する →</span>
+              </div>
+            </Link>
+
+            {/* 損益分岐点(CVP)分析 */}
+            <Link href="/cvp" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-rose-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-rose-50 w-fit p-3 rounded-xl">📊</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-rose-600">損益分岐点(CVP)分析</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  いくら売れば黒字になる？固定費・変動費から利益が出る分岐点をグラフで特定。
+                </p>
+                <span className="text-rose-600 font-bold text-sm text-right">計算する →</span>
+              </div>
+            </Link>
+
           </div>
         </section>
 
-        <section className="bg-slate-100 p-8 rounded-3xl mt-16 text-center">
-          <h3 className="font-bold text-slate-800 mb-4">他の脳トレにも挑戦！</h3>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/simbol" className="bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-6 rounded-full shadow-sm border border-slate-200 transition">
-              🧩 シンボル・デコード
+        {/* カテゴリ2：能力測定・脳トレ */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-800 border-b border-slate-200 pb-2">
+            <span className="text-3xl">⚡</span> 能力測定・脳トレ
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* 反射神経テスト */}
+            <Link href="/reaction" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-amber-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-amber-50 w-fit p-3 rounded-xl">⚡</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-amber-600">反射神経テスト</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  あなたの反応速度を精密測定。平均値・標準偏差・偏差値ランクでパフォーマンスを分析。
+                </p>
+                <span className="text-amber-600 font-bold text-sm text-right">計測する →</span>
+              </div>
             </Link>
-            <Link href="/reaction" className="bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 px-6 rounded-full shadow-sm border border-slate-200 transition">
-              ⚡ 反射神経テスト
+
+            {/* 脳トレ：シンボル・デコード */}
+            <Link href="/simbol" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-blue-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-blue-50 w-fit p-3 rounded-xl text-blue-600">
+                  <Zap size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-blue-600">脳トレ：シンボル・デコード</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  記号と数字を素早く照合して脳の処理速度を鍛えるゲーム。60秒で何問解けるか挑戦！
+                </p>
+                <span className="text-blue-600 font-bold text-sm text-right">挑戦する →</span>
+              </div>
             </Link>
+
+            {/* 脳トレ：ナンバー・スキャン (今回追加) */}
+            <Link href="/scan" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-green-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-green-50 w-fit p-3 rounded-xl text-green-600">
+                  <Grid3x3 size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-green-600">脳トレ：ナンバー・スキャン</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  周辺視野と探索速度を鍛える定番トレーニング。1から順に数字を素早くタップ！
+                </p>
+                <span className="text-green-600 font-bold text-sm text-right">スキャンする →</span>
+              </div>
+            </Link>
+
           </div>
         </section>
-      </article>
 
-    </div>
+        {/* カテゴリ3：バイオメカニクス・身体動作 */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-800 border-b border-slate-200 pb-2">
+            <span className="text-3xl">🦾</span> バイオメカニクス・身体動作
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {/* 関節トルク・シミュレーター */}
+            <Link href="/torque" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-purple-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-purple-50 w-fit p-3 rounded-xl">💪</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-purple-600">関節トルク計算機</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  角度による発揮力の変化をバイオメカニクスの視点で見える化します。
+                </p>
+                <span className="text-purple-600 font-bold text-sm text-right">計算する →</span>
+              </div>
+            </Link>
+
+            {/* 筋肉収縮・可動域シミュレーター */}
+            <Link href="/excursion" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-cyan-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-cyan-50 w-fit p-3 rounded-xl">⚙️</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-cyan-600">筋肉収縮シミュレーター</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                   筋肉の付着位置による「パワー型」と「スピード型」の違いを数学的に体感します。
+                </p>
+                <span className="text-cyan-600 font-bold text-sm text-right">計算する →</span>
+              </div>
+            </Link>
+
+            {/* 膝蓋腱反射（伸張反射）シミュレーター */}
+            <Link href="/reflex" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-red-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-red-50 w-fit p-3 rounded-xl">🦵</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-red-600">膝蓋腱反射シミュレーター</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  打撃が神経信号に変わり、筋肉を収縮させる「反射弓」のプロセスを完全可視化。
+                </p>
+                <span className="text-red-600 font-bold text-sm text-right">体験する →</span>
+              </div>
+            </Link>
+
+          </div>
+        </section>
+
+      </div>
+
+      {/* Tech Lab バナー */}
+      <div className="mt-24 w-full max-w-4xl px-4">
+        <div className="bg-slate-900 text-white p-10 rounded-3xl shadow-xl relative overflow-hidden group text-center">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20 translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+          <div className="relative z-10">
+            <h2 className="text-3xl font-bold mb-4 flex justify-center items-center gap-2">
+              Tech Lab <span className="text-2xl">🧪</span>
+            </h2>
+            <p className="text-slate-300 mb-8 max-w-lg mx-auto leading-relaxed">
+              ツールの裏側にある「計算ロジック」や、Next.jsを用いた「開発技術」を解説するブログエリアを開設しました。
+            </p>
+            <Link 
+              href="/blog" 
+              className="inline-block bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full transition-all transform group-hover:scale-105 shadow-lg hover:shadow-blue-500/50"
+            >
+              記事一覧を見る →
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <footer className="mt-20 text-slate-400 text-sm flex flex-wrap justify-center gap-6 pb-8">
+        <Link href="/about" className="hover:text-slate-600 transition">運営者情報</Link>
+        <span className="hidden md:inline text-slate-300">|</span>
+        <Link href="/privacy" className="hover:text-slate-600 transition">プライバシーポリシー</Link>
+        <span className="hidden md:inline text-slate-300">|</span>
+        <span>&copy; 2025 My Tools Box</span>
+      </footer>
+    </main>
   );
 }
