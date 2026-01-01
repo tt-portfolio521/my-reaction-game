@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Metadata } from 'next';
-import { Zap } from "lucide-react";
+import { Zap, Grid3x3 } from "lucide-react"; // Grid3x3を追加
 
 // トップページ用のSEO設定
 export const metadata: Metadata = {
@@ -82,7 +82,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* カテゴリ2：能力測定・脳トレ（分割しました） */}
+        {/* カテゴリ2：能力測定・脳トレ */}
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-800 border-b border-slate-200 pb-2">
             <span className="text-3xl">⚡</span> 能力測定・脳トレ
@@ -115,10 +115,24 @@ export default function Home() {
               </div>
             </Link>
 
+            {/* 脳トレ：ナンバー・スキャン (今回追加) */}
+            <Link href="/scan" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-green-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-green-50 w-fit p-3 rounded-xl text-green-600">
+                  <Grid3x3 size={32} />
+                </div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-green-600">脳トレ：ナンバー・スキャン</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  周辺視野と探索速度を鍛える定番トレーニング。1から順に数字を素早くタップ！
+                </p>
+                <span className="text-green-600 font-bold text-sm text-right">スキャンする →</span>
+              </div>
+            </Link>
+
           </div>
         </section>
 
-        {/* カテゴリ3：バイオメカニクス・身体動作（分割しました） */}
+        {/* カテゴリ3：バイオメカニクス・身体動作 */}
         <section>
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-800 border-b border-slate-200 pb-2">
             <span className="text-3xl">🦾</span> バイオメカニクス・身体動作
