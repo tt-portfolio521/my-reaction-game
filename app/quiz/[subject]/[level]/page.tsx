@@ -1,15 +1,14 @@
-// app/quiz/[subject]/[level]/page.tsx
 "use client";
 
 import { useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, Share2, HelpCircle, ArrowRight, Home } from "lucide-react";
-import { quizData } from "../../../data/quizData"; // パス階層が変わるため注意
+import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, Share2, HelpCircle, ArrowRight } from "lucide-react";
+import { quizData } from "../../../data/quizData"; // 階層が深くなったので ../ が3つになります
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function QuizPlayerPage({ params }: { params: { subject: string; level: string } }) {
-  // 1. データ検索
+  // 1. データ検索 (教科IDと難易度IDからデータを特定)
   const subject = quizData.find((s) => s.id === params.subject);
   const difficulty = subject?.difficulties.find((d) => d.id === params.level);
 
@@ -19,14 +18,14 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
 
   const questions = difficulty.questions;
   
-  // 2. 問題が0問の場合のハンドリング（準備中）
+  // 2. 問題が0問の場合の表示（準備中画面）
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center font-sans text-slate-800">
         <div className="text-6xl mb-4">🚧</div>
         <h2 className="text-2xl font-bold text-slate-800 mb-2">準備中です</h2>
-        <p className="text-slate-600 mb-8">このレベルの問題はまだ作成されていません。</p>
-        <Link href={`/quiz/${subject.id}`} className="px-6 py-3 bg-slate-900 text-white rounded-full font-bold">
+        <p className="text-slate-600 mb-8">このレベルの問題はまだ登録されていません。</p>
+        <Link href={`/quiz/${subject.id}`} className="px-6 py-3 bg-slate-900 text-white rounded-full font-bold hover:bg-slate-700 transition">
           難易度選択に戻る
         </Link>
       </div>
@@ -44,6 +43,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
   const currentQuestion = questions[currentQIndex];
   const progress = ((currentQIndex) / questions.length) * 100;
 
+  // 回答処理
   const handleAnswer = (index: number) => {
     if (isAnswered) return;
     setSelectedOptionIndex(index);
@@ -53,6 +53,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     }
   };
 
+  // 次へ進む処理
   const handleNext = () => {
     if (currentQIndex + 1 < questions.length) {
       setCurrentQIndex(currentQIndex + 1);
@@ -64,6 +65,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     }
   };
 
+  // 最初からやり直す
   const handleRestart = () => {
     setCurrentQIndex(0);
     setScore(0);
@@ -73,6 +75,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     setShowHint(false);
   };
 
+  // Xでシェア
   const shareResult = () => {
     const text = `【${subject.title}クイズ：${difficulty.title}】\n全${questions.length}問中「${score}問」正解しました！\n#MyToolsBox #クイズ #脳トレ`;
     const url = window.location.href;
@@ -90,8 +93,8 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
     else message = "次はもっといけるはず！💪";
 
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center space-y-6">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans text-slate-800">
+        <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center space-y-6 animate-in zoom-in duration-300">
           <div className="text-6xl mb-2">{percentage === 100 ? "🏆" : "📝"}</div>
           <div>
             <h2 className="text-3xl font-black text-slate-800">RESULT</h2>
@@ -133,7 +136,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
       
       {/* ヘッダーエリア */}
       <div className="w-full max-w-2xl flex justify-between items-center mb-6">
-        <Link href={`/quiz/${subject.id}`} className="text-slate-400 hover:text-slate-600 p-2 bg-white rounded-full shadow-sm">
+        <Link href={`/quiz/${subject.id}`} className="text-slate-400 hover:text-slate-600 p-2 bg-white rounded-full shadow-sm transition">
           <ArrowLeft size={20} />
         </Link>
         <div className="text-center">
@@ -170,8 +173,8 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
           {/* 選択肢エリア */}
           <div className="space-y-3 mb-6">
             {currentQuestion.options.map((option, index) => {
-              // 判定ロジック
-              let btnClass = "bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50";
+              // 判定ロジックによるスタイル切り替え
+              let btnClass = "bg-white border-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300";
               let icon = null;
 
               if (isAnswered) {
@@ -200,7 +203,7 @@ export default function QuizPlayerPage({ params }: { params: { subject: string; 
             })}
           </div>
 
-          {/* 解説エリア */}
+          {/* 解説エリア（回答後表示） */}
           <AnimatePresence>
             {isAnswered && (
               <motion.div 

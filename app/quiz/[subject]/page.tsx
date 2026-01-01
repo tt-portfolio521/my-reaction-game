@@ -1,20 +1,20 @@
-// app/quiz/[subject]/page.tsx
 "use client";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
-import { quizData } from "../../data/quizData";
+import { quizData } from "../../data/quizData"; // パス階層に注意
 
 export default function DifficultySelectPage({ params }: { params: { subject: string } }) {
-  // 教科データを検索
+  // URLパラメータ(例: kokugo)から教科データを検索
   const subject = quizData.find((s) => s.id === params.subject);
 
+  // データが見つからない場合は404
   if (!subject) {
     notFound();
   }
 
-  // 難易度ごとの装飾設定
+  // 難易度ごとの装飾設定（色や★の数）
   const getLevelStyle = (id: string) => {
     switch (id) {
       case "easy": return { star: 1, color: "text-green-500", border: "border-green-200", bg: "bg-green-50" };
@@ -27,6 +27,7 @@ export default function DifficultySelectPage({ params }: { params: { subject: st
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans text-slate-800">
       
+      {/* 戻るボタン */}
       <div className="absolute top-4 left-4 z-10">
         <Link href="/quiz" className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold bg-white/80 px-4 py-2 rounded-full shadow-sm hover:shadow transition-all">
           <ArrowLeft size={18} />
@@ -35,6 +36,7 @@ export default function DifficultySelectPage({ params }: { params: { subject: st
       </div>
 
       <div className="max-w-2xl mx-auto mt-8">
+        {/* 教科タイトルエリア */}
         <div className="text-center mb-10">
           <div className="text-6xl mb-4">{subject.icon}</div>
           <h1 className={`text-3xl md:text-4xl font-black mb-2 ${subject.color}`}>
@@ -43,6 +45,7 @@ export default function DifficultySelectPage({ params }: { params: { subject: st
           <p className="text-slate-600 font-bold">難易度を選択してください</p>
         </div>
 
+        {/* 難易度リスト */}
         <div className="space-y-4">
           {subject.difficulties.map((level) => {
             const style = getLevelStyle(level.id);
@@ -51,9 +54,10 @@ export default function DifficultySelectPage({ params }: { params: { subject: st
             return (
               <Link href={`/quiz/${subject.id}/${level.id}`} key={level.id} className="block group">
                 <div className={`bg-white rounded-2xl p-6 border-2 ${style.border} shadow-sm hover:shadow-md transition-all flex items-center gap-6 relative overflow-hidden`}>
-                  {/* 背景装飾 */}
+                  {/* 背景装飾（薄い色） */}
                   <div className={`absolute left-0 top-0 bottom-0 w-3 ${style.bg.replace("bg-", "bg-opacity-50 bg-")}`} />
                   
+                  {/* ★アイコンエリア */}
                   <div className={`w-16 h-16 rounded-xl ${style.bg} flex flex-col items-center justify-center shrink-0`}>
                     <div className="flex gap-0.5">
                       {[...Array(style.star)].map((_, i) => (
@@ -63,6 +67,7 @@ export default function DifficultySelectPage({ params }: { params: { subject: st
                     <span className={`text-xs font-bold mt-1 uppercase ${style.color}`}>{level.id}</span>
                   </div>
 
+                  {/* テキスト情報 */}
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-slate-800 group-hover:text-slate-600 transition-colors">
                       {level.title}
@@ -72,6 +77,7 @@ export default function DifficultySelectPage({ params }: { params: { subject: st
                     </p>
                   </div>
 
+                  {/* 問題数バッジ */}
                   <div className="text-right shrink-0">
                     <div className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
                       全{questionCount}問
