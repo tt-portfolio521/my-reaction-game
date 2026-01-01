@@ -5,18 +5,51 @@ import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, Trophy, ArrowLeft, Grid3x3, Timer, MousePointerClick } from "lucide-react";
 import Link from "next/link";
 
-// 難易度設定 (count: 数字の個数, btnSize: ボタンの幅%)
-// 重なりを防ぐため、ボタンサイズを全体的に小さく調整しました
+// 難易度設定
 const LEVELS = {
-  level1: { count: 9, label: "LEVEL 1 (1~9)", color: "bg-blue-500", text: "text-blue-600", btnSize: 18 },
-  level2: { count: 16, label: "LEVEL 2 (1~16)", color: "bg-green-500", text: "text-green-600", btnSize: 14 },
-  level3: { count: 25, label: "LEVEL 3 (1~25)", color: "bg-orange-500", text: "text-orange-600", btnSize: 10 },
+  level1: { count: 9, label: "LEVEL 1 (1~9)", color: "bg-blue-500", text: "text-blue-600", particle: "bg-blue-400", btnSize: 18 },
+  level2: { count: 16, label: "LEVEL 2 (1~16)", color: "bg-green-500", text: "text-green-600", particle: "bg-green-400", btnSize: 14 },
+  level3: { count: 25, label: "LEVEL 3 (1~25)", color: "bg-orange-500", text: "text-orange-600", particle: "bg-orange-400", btnSize: 10 },
 };
 
 type LevelKey = keyof typeof LEVELS;
-
-// 座標の型
 type Position = { top: number; left: number };
+type Explosion = { id: number; x: number; y: number; color: string };
+
+// 💥 爆発エフェクトコンポーネント
+const ExplosionEffect = ({ x, y, color }: { x: number; y: number; color: string }) => {
+  return (
+    <div
+      className="absolute pointer-events-none z-20"
+      style={{ left: `${x}%`, top: `${y}%`, width: 0, height: 0 }}
+    >
+      {[...Array(8)].map((_, i) => {
+        // 角度と距離をランダムに計算
+        const angle = (i * 45) + (Math.random() * 20 - 10); // 8方向にバラす
+        const dist = 30 + Math.random() * 30; // 飛び散る距離(px)
+        const rad = (angle * Math.PI) / 180;
+        const xMove = Math.cos(rad) * dist;
+        const yMove = Math.sin(rad) * dist;
+
+        return (
+          <motion.div
+            key={i}
+            className={`absolute rounded-full ${color}`}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+            animate={{
+              x: xMove,
+              y: yMove,
+              opacity: 0,
+              scale: 0,
+            }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            style={{ width: 8, height: 8, marginLeft: -4, marginTop: -4 }}
+          />
+        );
+      })}
+    </div>
+  );
+};
 
 export default function NumberScanGame() {
   const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
@@ -24,65 +57,49 @@ export default function NumberScanGame() {
   const [numbers, setNumbers] = useState<number[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [nextNumber, setNextNumber] = useState(1);
+  const [explosions, setExplosions] = useState<Explosion[]>([]); // 爆発管理用
   
-  // タイム計測用
   const [startTime, setStartTime] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [penaltyTime, setPenaltyTime] = useState(0);
-
-  // 演出用
   const [shake, setShake] = useState(false);
 
-  // 座標をランダム生成する関数
+  // 座標生成 (変更なし)
   const generatePositions = (count: number, btnSize: number): Position[] => {
     const newPositions: Position[] = [];
-    const maxAttempts = 500; // 試行回数を増やして配置成功率を上げる
-
+    const maxAttempts = 500;
     for (let i = 0; i < count; i++) {
       let placed = false;
       let attempts = 0;
-
       while (!placed && attempts < maxAttempts) {
         const top = Math.random() * (100 - btnSize);
         const left = Math.random() * (100 - btnSize);
-
-        // 重なりチェック（少し余裕を持たせて btnSize * 1.1 の距離を確保）
         const overlap = newPositions.some((pos) => {
           const xDist = Math.abs(pos.left - left);
           const yDist = Math.abs(pos.top - top);
           return xDist < btnSize * 1.1 && yDist < btnSize * 1.1;
         });
-
         if (!overlap) {
           newPositions.push({ top, left });
           placed = true;
         }
         attempts++;
       }
-
-      // 配置できなかった場合の救済（重なっても配置する）
       if (!placed) {
-        newPositions.push({ 
-          top: Math.random() * (100 - btnSize), 
-          left: Math.random() * (100 - btnSize) 
-        });
+        newPositions.push({ top: Math.random() * (100 - btnSize), left: Math.random() * (100 - btnSize) });
       }
     }
     return newPositions;
   };
 
-  // ゲーム開始
   const startGame = (selectedLevel: LevelKey) => {
     const setting = LEVELS[selectedLevel];
     const total = setting.count;
-    
     const nums = Array.from({ length: total }, (_, i) => i + 1);
-    // 数字の順序をシャッフル
     for (let i = nums.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [nums[i], nums[j]] = [nums[j], nums[i]];
     }
-
     const pos = generatePositions(total, setting.btnSize);
 
     setNumbers(nums);
@@ -91,11 +108,11 @@ export default function NumberScanGame() {
     setNextNumber(1);
     setPenaltyTime(0);
     setCurrentTime(0);
+    setExplosions([]); // リセット
     setGameState("playing");
     setStartTime(Date.now());
   };
 
-  // タイマー処理
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (gameState === "playing") {
@@ -106,20 +123,42 @@ export default function NumberScanGame() {
     return () => clearInterval(timer);
   }, [gameState, startTime, penaltyTime]);
 
-  // タップ処理
-  const handleCardClick = (num: number) => {
+  // タップ処理 (修正：indexを受け取る)
+  const handleCardClick = (num: number, index: number) => {
     if (gameState !== "playing") return;
 
     if (num === nextNumber) {
-      // 正解
+      // --- 正解時の処理 ---
+      
+      // 1. 爆発エフェクトを追加
+      const pos = positions[index];
+      const btnSize = LEVELS[level].btnSize;
+      const centerX = pos.left + btnSize / 2; // ボタンの中心X(%)
+      const centerY = pos.top + btnSize / 2;  // ボタンの中心Y(%)
+      
+      const newExplosion = { 
+        id: num, 
+        x: centerX, 
+        y: centerY, 
+        color: LEVELS[level].particle 
+      };
+      setExplosions((prev) => [...prev, newExplosion]);
+
+      // 2. 一定時間後に爆発データを削除（メモリ管理）
+      setTimeout(() => {
+        setExplosions((prev) => prev.filter(e => e.id !== num));
+      }, 500);
+
+      // 3. ゲーム進行
       const total = LEVELS[level].count;
       if (num === total) {
         setGameState("finished");
       } else {
         setNextNumber((prev) => prev + 1);
       }
+
     } else {
-      // 不正解
+      // --- 不正解時の処理 ---
       setPenaltyTime((prev) => prev + 1000);
       setShake(true);
       setTimeout(() => setShake(false), 300);
@@ -135,7 +174,6 @@ export default function NumberScanGame() {
   return (
     <div className="min-h-screen flex flex-col items-center py-12 px-4 font-sans text-slate-800 bg-slate-50">
       
-      {/* 戻るボタン */}
       <div className="absolute top-4 left-4 z-10">
         <Link href="/" className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold bg-white/80 px-4 py-2 rounded-full shadow-sm hover:shadow transition-all">
           <ArrowLeft size={18} />
@@ -155,7 +193,6 @@ export default function NumberScanGame() {
                 </span>
             </div>
           </div>
-
           <div className="flex flex-col items-end">
             <span className="text-xs font-bold opacity-60">TIME</span>
             <span className={`text-4xl font-mono font-bold leading-none ${shake ? "text-red-500" : "text-white"}`}>
@@ -165,7 +202,7 @@ export default function NumberScanGame() {
         </div>
 
         {/* ゲームエリア */}
-        <div className="p-4 md:p-6 flex-1 flex flex-col items-center justify-center bg-slate-50 relative">
+        <div className="p-4 md:p-6 flex-1 flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden">
           
           {gameState === "idle" ? (
             <div className="text-center space-y-8 max-w-md w-full relative z-10">
@@ -229,12 +266,17 @@ export default function NumberScanGame() {
                </div>
             </div>
           ) : (
-            // ゲームプレイエリア（枠線を削除し、背景に溶け込ませる）
+            // ゲームプレイエリア（枠なし）
             <motion.div 
-                className="relative w-full max-w-[400px] aspect-square" // bg-slate-100, border, shadow を削除
+                className="relative w-full max-w-[400px] aspect-square"
                 animate={shake ? { x: [-5, 5, -5, 5, 0] } : {}}
                 transition={{ duration: 0.3 }}
             >
+                {/* 爆発エフェクトのレンダリング */}
+                {explosions.map((exp) => (
+                  <ExplosionEffect key={exp.id} x={exp.x} y={exp.y} color={exp.color} />
+                ))}
+
                 <AnimatePresence>
                     {numbers.map((num, i) => {
                         const isCleared = num < nextNumber;
@@ -248,12 +290,13 @@ export default function NumberScanGame() {
                                 initial={{ opacity: 0, scale: 0 }}
                                 animate={{ 
                                     opacity: isCleared ? 0 : 1, 
-                                    scale: isCleared ? 0.5 : 1,
+                                    scale: isCleared ? 0.5 : 1, // 正解済みは小さくフェードアウト
                                     top: `${pos.top}%`,
                                     left: `${pos.left}%`,
                                 }}
                                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                onClick={() => handleCardClick(num)}
+                                // index(i) を渡して座標を特定できるようにする
+                                onClick={() => handleCardClick(num, i)}
                                 className={`
                                     absolute rounded-full font-bold shadow-md border-b-4 active:border-b-0 active:translate-y-1 active:shadow-none transition-colors flex items-center justify-center select-none
                                     ${isCleared ? "pointer-events-none" : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"}
@@ -265,7 +308,6 @@ export default function NumberScanGame() {
                                 }}
                             >
                                 {num}
-                                {/* 青いガイド（isNext）の表示を削除しました */}
                             </motion.button>
                         );
                     })}
