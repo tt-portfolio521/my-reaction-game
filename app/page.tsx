@@ -141,6 +141,20 @@ export default function Home() {
   </div>
 </Link>
 
+            {/* クロスワード (今回追加) */}
+            <Link href="/crossword" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-pink-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-pink-50 w-fit p-3 rounded-xl text-pink-600">
+                  <Grid3x3 size={32} /> {/* Grid3x3を再利用、またはPenToolなどをimport */}
+                </div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-pink-600">暇つぶしクロスワード</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  隙間時間に脳の体操。シンプルな5x5マスのミニクロスワードパズル。
+                </p>
+                <span className="text-pink-600 font-bold text-sm text-right">パズルを解く →</span>
+              </div>
+            </Link>
+
           </div>
         </section>
 
