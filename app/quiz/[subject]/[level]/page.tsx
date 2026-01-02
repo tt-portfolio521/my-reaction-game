@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useState, use } from "react"; // use を追加
+import React, { useState, use } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, Share2, HelpCircle, ArrowRight } from "lucide-react";
 import { quizData } from "../../../data/quizData";
 import { motion, AnimatePresence } from "framer-motion";
 
-// ▼ 修正点1: params を Promise型に変更
 export default function QuizPlayerPage({ params }: { params: Promise<{ subject: string; level: string }> }) {
-  
-  // ▼ 修正点2: use() で中身を取り出す
+  // 1. パラメータ取得
   const { subject: subjectId, level: levelId } = use(params);
 
-  // ▼ 修正点3: 取り出した変数を使う
+  // 2. データ検索
   const subject = quizData.find((s) => s.id === subjectId);
   const difficulty = subject?.difficulties.find((d) => d.id === levelId);
 
@@ -21,11 +19,21 @@ export default function QuizPlayerPage({ params }: { params: Promise<{ subject: 
     notFound();
   }
 
-  // ... (これ以降のコードは変更ありません)
+  // ★修正ポイント：ボタンの色を明示的に定義する関数
+  const getButtonColor = (id: string) => {
+    switch (id) {
+      case "kokugo": return "bg-red-600 hover:bg-red-700 border-red-600";
+      case "sansu": return "bg-blue-600 hover:bg-blue-700 border-blue-600";
+      case "eigo": return "bg-orange-500 hover:bg-orange-600 border-orange-500";
+      case "shakai": return "bg-green-600 hover:bg-green-700 border-green-600";
+      case "rika": return "bg-purple-600 hover:bg-purple-700 border-purple-600";
+      default: return "bg-slate-900 hover:bg-slate-800 border-slate-900";
+    }
+  };
+
   const questions = difficulty.questions;
   
   if (questions.length === 0) {
-    // ... 準備中画面 ...
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center font-sans text-slate-800">
         <div className="text-6xl mb-4">🚧</div>
@@ -211,7 +219,8 @@ export default function QuizPlayerPage({ params }: { params: Promise<{ subject: 
                 </p>
                 <button 
                   onClick={handleNext}
-                  className={`w-full py-3 text-white rounded-xl font-bold hover:opacity-90 transition flex items-center justify-center gap-2 ${subject.color.replace('text-', 'bg-')}`}
+                  // ★修正ポイント：ここで関数を使って正しい色クラスを呼び出します
+                  className={`w-full py-3 text-white rounded-xl font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:shadow-md transition-all flex items-center justify-center gap-2 ${getButtonColor(subject.id)}`}
                 >
                   {currentQIndex + 1 === questions.length ? "結果を見る" : "次の問題へ"} <ArrowRight size={18} />
                 </button>
