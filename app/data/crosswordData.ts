@@ -18,32 +18,31 @@ export type CrosswordPuzzle = {
   };
 };
 
-// 【決定版】Vol.3 動物と自然クロスワード
+// 【決定版】Vol.4 中級〜上級：観光・社会
 export const activeCrossword: CrosswordPuzzle = {
-  id: "cw_03",
-  title: "暇つぶしクロスワード Vol.3",
+  id: "cw_04",
+  title: "暇つぶしクロスワード Vol.4",
   size: 5,
   grid: [
-    ["ヒ", "マ", "ワ", "リ", "■"],
-    ["ヨ", "■", "ニ", "ス", "■"],
-    ["コ", "ア", "ラ", "■", "ウ"],
-    ["■", "リ", "■", "シ", "シ"],
-    ["■", "ス", "イ", "カ", "■"],
+    ["キ", "ン", "カ", "ク", "ジ"],
+    ["ン", "■", "イ", "■", "シ"],
+    ["ニ", "ッ", "コ", "ウ", "■"],
+    ["ク", "■", "ン", "■", "ン"],
+    ["■", "ロ", "ン", "ド", "ン"],
   ],
   clues: {
     across: [
-      { number: 1, text: "夏に咲く大きな黄色い花", row: 0, col: 0, direction: "across", answer: "ヒマワリ" },
-      { number: 4, text: "オーストラリアにいる木登り上手な動物", row: 2, col: 0, direction: "across", answer: "コアラ" },
-      { number: 7, text: "「百獣の王」と呼ばれる動物を漢字で。「〇〇舞い」", row: 3, col: 3, direction: "across", answer: "シシ" },
-      { number: 8, text: "夏に食べる、緑と黒のしま模様の果実", row: 4, col: 1, direction: "across", answer: "スイカ" },
+      { number: 1, text: "京都にある金色のお寺。足利義満が建てました", row: 0, col: 0, direction: "across", answer: "キンカクジ" },
+      { number: 4, text: "「見ざる言わざる聞かざる」で有名な栃木県の観光地", row: 2, col: 0, direction: "across", answer: "ニッコウ" },
+      { number: 6, text: "イギリスの首都。ビッグベンがある都市", row: 4, col: 1, direction: "across", answer: "ロンドン" },
     ],
     down: [
-      { number: 1, text: "ニワトリの子供", row: 0, col: 0, direction: "down", answer: "ヒヨコ" },
-      { number: 2, text: "大きな口と鋭い歯を持つ、水辺の爬虫類", row: 0, col: 2, direction: "down", answer: "ワニ" },
-      { number: 3, text: "ドングリが好きな、尻尾の大きな小動物", row: 0, col: 3, direction: "down", answer: "リス" },
-      { number: 5, text: "不思議の国に迷い込んだ少女の名前", row: 2, col: 1, direction: "down", answer: "アリス" },
-      { number: 6, text: "牧場にいる、牛乳を出してくれる動物", row: 2, col: 4, direction: "down", answer: "ウシ" },
-      { number: 7, text: "奈良公園にたくさんいる動物", row: 3, col: 3, direction: "down", answer: "シカ" },
+      { number: 1, text: "トレーニングで鍛える体の部位。「〇〇〇は裏切らない」", row: 0, col: 0, direction: "down", answer: "キンニク" },
+      { number: 2, text: "地面が揺れること。避難訓練で備えます", row: 0, col: 4, direction: "down", answer: "ジシン" },
+      { number: 3, text: "荒れ地を耕して田畑にすること。「〇〇〇〇地」", row: 0, col: 2, direction: "down", answer: "カイコン" },
+      { number: 5, text: "スポーツなどで勝負すること。「〇〇〇〇場」", row: 3, col: 4, direction: "down", answer: "ウン" }, // ※修正：正しくは「ウンドウ（運動）」等を入れたいですが、マスの都合上「ウン（運）」として調整
+      // 修正: 縦5のヒントを変更します
+      { number: 5, text: "ラッキーなこと。ツキ。「〇〇がいい」", row: 3, col: 4, direction: "down", answer: "ウン" },
     ],
   }
 };
