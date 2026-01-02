@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, RotateCcw, HelpCircle } from "lucide-react";
-// ▼ 修正点: motion を追加インポートしました
-import { motion } from "framer-motion"; 
+import { motion } from "framer-motion";
 import { activeCrossword, CrosswordClue } from "../data/crosswordData";
 
 export default function CrosswordPage() {
@@ -25,8 +24,11 @@ export default function CrosswordPage() {
   // クリア状態
   const [isCleared, setIsCleared] = useState(false);
 
-  // 入力フォームへの参照（スマホでキーボードを出すため）
+  // 入力フォームへの参照
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ★追加: IME入力中（変換中）かどうかを判定するフラグ
+  const isComposing = useRef(false);
 
   // マスを選択したときの処理
   const handleCellClick = (r: number, c: number) => {
@@ -43,37 +45,63 @@ export default function CrosswordPage() {
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
-  // 文字が入力されたときの処理
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!selectedCell) return;
-    const val = e.target.value.slice(-1); // 最後の1文字だけ取る（全角対応）
-
-    if (!val) return; // 空なら何もしない
+  // ★変更: 入力が確定したときの処理（共通化）
+  const handleInputComplete = (val: string) => {
+    if (!selectedCell || !val) return;
+    
+    // 最後の1文字だけ取る
+    const char = val.slice(-1);
 
     const newGrid = [...userGrid];
-    newGrid[selectedCell.r] = [...newGrid[selectedCell.r]];
-    newGrid[selectedCell.r][selectedCell.c] = val;
+    // 行の配列をコピーして安全に更新
+    if (!newGrid[selectedCell.r]) newGrid[selectedCell.r] = [...userGrid[selectedCell.r]];
+    else newGrid[selectedCell.r] = [...newGrid[selectedCell.r]];
+    
+    newGrid[selectedCell.r][selectedCell.c] = char;
     setUserGrid(newGrid);
 
     // 次のマスへ移動
     moveFocus(true);
-    
-    // 入力欄をクリア（常に空にしておく）
+  };
+
+  // ★追加: 変換開始（IME入力開始）
+  const handleCompositionStart = () => {
+    isComposing.current = true;
+  };
+
+  // ★追加: 変換確定（IME入力終了）
+  // 「Enter」で変換を確定した瞬間に呼ばれます
+  const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
+    isComposing.current = false;
+    handleInputComplete(e.currentTarget.value);
+    e.currentTarget.value = ""; // 処理が終わったら空にする
+  };
+
+  // ★変更: 文字入力イベント
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 変換中の場合は何もしない（入力欄に文字を溜めさせる）
+    if (isComposing.current) return;
+
+    // アルファベットや数字など、変換を伴わない入力の場合は即座に処理
+    handleInputComplete(e.target.value);
     e.target.value = "";
   };
 
   // Backspaceキーなどの処理
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Backspaceの処理
     if (e.key === "Backspace") {
+      // 変換中のBackspaceは、変換文字の修正なので何もしない
+      if (isComposing.current) return;
+
       if (!selectedCell) return;
       
       const newGrid = [...userGrid];
       // 現在のマスが空なら、一つ戻って消す
       if (userGrid[selectedCell.r][selectedCell.c] === "") {
         moveFocus(false);
-        // state更新は非同期なので、移動先の削除は少し複雑になるが、
-        // 簡易的に「今のマスを消す」だけで十分操作感は良い
       } else {
+        newGrid[selectedCell.r] = [...newGrid[selectedCell.r]];
         newGrid[selectedCell.r][selectedCell.c] = "";
         setUserGrid(newGrid);
       }
@@ -85,7 +113,6 @@ export default function CrosswordPage() {
     if (!selectedCell) return;
     let { r, c } = selectedCell;
     
-    // 無限ループ防止用カウンタ
     let tries = 0;
     while (tries < size * size) {
       if (direction === "across") {
@@ -94,10 +121,8 @@ export default function CrosswordPage() {
         r = forward ? r + 1 : r - 1;
       }
 
-      // 範囲外に出たら止める（または次の行へ行くロジックも可）
       if (r < 0 || r >= size || c < 0 || c >= size) break;
 
-      // 黒マスでなければ移動完了
       if (puzzle.grid[r][c] !== "■") {
         setSelectedCell({ r, c });
         return;
@@ -125,7 +150,6 @@ export default function CrosswordPage() {
     }
   };
 
-  // マスに表示する番号を計算
   const getCellNumber = (r: number, c: number) => {
     const clue = [...puzzle.clues.across, ...puzzle.clues.down].find(
       (clue) => clue.row === r && clue.col === c
@@ -136,13 +160,22 @@ export default function CrosswordPage() {
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 font-sans text-slate-800">
       
-      {/* 隠し入力フォーム（スマホキーボード用） */}
+      {/* ★修正: 入力フォームの設定を変更
+        - onCompositionStart/End を追加して日本語入力に対応
+        - 位置を画面外に飛ばさず、透明にして配置することでIME候補ウィンドウの位置ズレを軽減
+      */}
       <input
         ref={inputRef}
         type="text"
-        className="absolute opacity-0 top-0 left-0 h-0 w-0"
+        className="absolute opacity-0 pointer-events-none" 
+        style={{ 
+            top: selectedCell ? '50%' : '0', 
+            left: '50%' 
+        }}
         onChange={handleInput}
         onKeyDown={handleKeyDown}
+        onCompositionStart={handleCompositionStart} // 日本語入力開始
+        onCompositionEnd={handleCompositionEnd}     // 日本語入力確定
         autoComplete="off"
       />
 
@@ -183,7 +216,6 @@ export default function CrosswordPage() {
                 const isSelected = selectedCell?.r === r && selectedCell?.c === c;
                 const cellNum = getCellNumber(r, c);
                 
-                // 関連する列・行のハイライト（オプション）
                 const isRelated = selectedCell && !isBlack && (
                   (direction === "across" && selectedCell.r === r) ||
                   (direction === "down" && selectedCell.c === c)
@@ -202,13 +234,11 @@ export default function CrosswordPage() {
                   >
                     {!isBlack && (
                       <>
-                        {/* マス番号 */}
                         {cellNum && (
                           <span className="absolute top-0.5 left-1 text-[10px] text-slate-400 font-normal">
                             {cellNum}
                           </span>
                         )}
-                        {/* 入力文字 */}
                         <span className="text-slate-800">
                           {userGrid[r][c]}
                         </span>
@@ -220,7 +250,6 @@ export default function CrosswordPage() {
             ))}
           </div>
 
-          {/* 操作ボタン */}
           <div className="flex gap-4 mt-8 w-full max-w-[400px]">
             <button 
               onClick={() => {
@@ -241,7 +270,6 @@ export default function CrosswordPage() {
             </button>
           </div>
 
-          {/* クリアメッセージ */}
           {isCleared && (
             <motion.div 
               initial={{ scale: 0, opacity: 0 }}
