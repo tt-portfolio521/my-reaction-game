@@ -43,25 +43,25 @@ export const quizData: QuizSubject[] = [
         questions: [
           {
             questionNumber: 1,
-            question: "「犬」の読み方は？",
+            question: "「右」という漢字。一画目はどっち？",
             options: [
-              { text: "ねこ", isCorrect: false },
-              { text: "いぬ", isCorrect: true, rationale: "正解です！「犬（いぬ）」ですね。" },
-              { text: "とり", isCorrect: false },
-              { text: "うし", isCorrect: false },
+              { text: "横（一）", isCorrect: false },
+              { text: "ななめ（ノ）", isCorrect: true, rationale: "「右」は「ノ（はらい）」から、「左」は「一（横）」から書きます。" },
+              { text: "縦（｜）", isCorrect: false },
+              { text: "口（くち）", isCorrect: false },
             ],
-            hint: "「い」から始まります。",
+            hint: "「左」とは書き順が逆です。",
           },
           {
             questionNumber: 2,
-            question: "「林」という漢字は、「木」がいくつある？",
+            question: "「一昨日」の読み方は？",
             options: [
-              { text: "1つ", isCorrect: false },
-              { text: "2つ", isCorrect: true, rationale: "「木」が2つで「林（はやし）」、3つで「森（もり）」です。" },
-              { text: "3つ", isCorrect: false },
-              { text: "4つ", isCorrect: false },
+              { text: "あさって", isCorrect: false },
+              { text: "おととい", isCorrect: true, rationale: "昨日の前の日です。「あさって」は明後日と書きます。" },
+              { text: "さきおととい", isCorrect: false },
+              { text: "やのあさって", isCorrect: false },
             ],
-            hint: "森（もり）よりは少ないです。",
+            hint: "「きのう」の前の日です。",
           },
           {
             questionNumber: 3,
