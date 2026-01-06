@@ -167,6 +167,18 @@ export default function Home() {
               </div>
             </Link>
 
+            {/* ポモドーロタイマー */}
+            <Link href="/pomodoro" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-orange-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-orange-50 w-fit p-3 rounded-xl">🍅</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-orange-600">ポモドーロタイマー</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  25分の集中作業 + 5分の休憩。時間管理テクニックで生産性をアップ！
+                </p>
+                <span className="text-orange-600 font-bold text-sm text-right">スタートする →</span>
+              </div>
+            </Link>
+
           </div>
         </section>
 
