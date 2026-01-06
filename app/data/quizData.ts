@@ -1008,4 +1008,200 @@ export const quizData: QuizSubject[] = [
       },
     ],
   },
+  // --- 雑学 ---
+  {
+    id: "zatsugaku",
+    title: "雑学",
+    icon: "🤔",
+    color: "text-indigo-600",
+    bg: "bg-indigo-50",
+    difficulties: [
+      {
+        id: "easy",
+        title: "初級 (基本知識)",
+        description: "身近な雑学と一般常識。",
+        questions: [
+          {
+            questionNumber: 1,
+            question: "世界で一番長い川は？",
+            options: [
+              { text: "アマゾン川", isCorrect: false },
+              { text: "ナイル川", isCorrect: true, rationale: "ナイル川は全長約6,650kmで世界最長です。" },
+              { text: "ミシシッピ川", isCorrect: false },
+              { text: "黄河", isCorrect: false },
+            ],
+            hint: "アフリカにある川です。",
+          },
+          {
+            questionNumber: 2,
+            question: "人間の骨は何本ある？",
+            options: [
+              { text: "206本", isCorrect: true, rationale: "大人になると206本の骨で構成されています。" },
+              { text: "208本", isCorrect: false },
+              { text: "210本", isCorrect: false },
+              { text: "200本", isCorrect: false },
+            ],
+            hint: "新生児は300本以上ですが、大人になると減ります。",
+          },
+          {
+            questionNumber: 3,
+            question: "サッカーのボールの表面にある五角形と六角形の数は？",
+            options: [
+              { text: "12個の五角形と20個の六角形", isCorrect: true, rationale: "五角形12個と六角形20個で合計32個のパネルです。" },
+              { text: "10個の五角形と15個の六角形", isCorrect: false },
+              { text: "14個の五角形と18個の六角形", isCorrect: false },
+              { text: "16個の五角形と24個の六角形", isCorrect: false },
+            ],
+            hint: "五角形の方が少ないです。",
+          },
+          {
+            questionNumber: 4,
+            question: "日本で一番高い山は？",
+            options: [
+              { text: "阿蘇山", isCorrect: false },
+              { text: "富士山", isCorrect: true, rationale: "富士山は標高3,776mで日本最高峰です。" },
+              { text: "白山", isCorrect: false },
+              { text: "浅間山", isCorrect: false },
+            ],
+            hint: "日本を象徴する山です。",
+          },
+          {
+            questionNumber: 5,
+            question: "1年は何ヶ月ある？",
+            options: [
+              { text: "10ヶ月", isCorrect: false },
+              { text: "12ヶ月", isCorrect: true, rationale: "1年は12ヶ月で構成されています。" },
+              { text: "13ヶ月", isCorrect: false },
+              { text: "11ヶ月", isCorrect: false },
+            ],
+            hint: "カレンダーを見てみましょう。",
+          },
+        ],
+      },
+      {
+        id: "normal",
+        title: "中級 (興味深い知識)",
+        description: "少しマニアックな雑学。",
+        questions: [
+          {
+            questionNumber: 1,
+            question: "「ピラミッド」の語源は？",
+            options: [
+              { text: "ギリシャ語の「火」", isCorrect: false },
+              { text: "ギリシャ語の「小麦粉」", isCorrect: true, rationale: "「ピュラミス（小麦粉）」から来ており、形が三角錐の小麦粉の山に似ていたため。" },
+              { text: "エジプト語の「王の墓」", isCorrect: false },
+              { text: "ラテン語の「三角」", isCorrect: false },
+            ],
+            hint: "食べ物に関連しています。",
+          },
+          {
+            questionNumber: 2,
+            question: "世界で一番重い鳥は？",
+            options: [
+              { text: "コンドル", isCorrect: false },
+              { text: "ダチョウ", isCorrect: false },
+              { text: "オオハシ", isCorrect: true, rationale: "オオハシは体重9kg以上で、世界最重量の鳥です。" },
+              { text: "ペンギン", isCorrect: false },
+            ],
+            hint: "アフリカに生息する鳥です。",
+          },
+          {
+            questionNumber: 3,
+            question: "「OK」の意味は？",
+            options: [
+              { text: "All Correct", isCorrect: false },
+              { text: "Old Kinderhook", isCorrect: true, rationale: "アメリカ大統領バン・ブーレンのニックネームから来ています。" },
+              { text: "Only Kind", isCorrect: false },
+              { text: "One Kiss", isCorrect: false },
+            ],
+            hint: "アメリカの大統領に関連しています。",
+          },
+          {
+            questionNumber: 4,
+            question: "金魚の記憶力はどのくらい？",
+            options: [
+              { text: "3秒", isCorrect: true, rationale: "金魚の記憶力は約3秒と言われています。" },
+              { text: "30秒", isCorrect: false },
+              { text: "3分", isCorrect: false },
+              { text: "30分", isCorrect: false },
+            ],
+            hint: "とても短いです。",
+          },
+          {
+            questionNumber: 5,
+            question: "「ハチミツ」は腐らないと言われる理由は？",
+            options: [
+              { text: "糖分が高いため", isCorrect: true, rationale: "糖分が高く水分が少ないため、細菌が繁殖しにくいです。" },
+              { text: "酸性だから", isCorrect: false },
+              { text: "蜂の成分が防腐剤", isCorrect: false },
+              { text: "温度が高いから", isCorrect: false },
+            ],
+            hint: "糖分が関係しています。",
+          },
+        ],
+      },
+      {
+        id: "hard",
+        title: "上級 (高度な知識)",
+        description: "専門的な雑学とトリビア。",
+        questions: [
+          {
+            questionNumber: 1,
+            question: "「モグラ文字」の由来は？",
+            options: [
+              { text: "モグラが掘った跡", isCorrect: false },
+              { text: "新聞記者のモグラ", isCorrect: true, rationale: "内部告発者の意味で、モグラのように地中で活動する記者から。" },
+              { text: "モグラの足跡", isCorrect: false },
+              { text: "古代文字の名前", isCorrect: false },
+            ],
+            hint: "ジャーナリズム用語です。",
+          },
+          {
+            questionNumber: 2,
+            question: "世界最古の通貨は？",
+            options: [
+              { text: "ドル", isCorrect: false },
+              { text: "ユーロ", isCorrect: false },
+              { text: "貝殻", isCorrect: true, rationale: "古代の多くの文化で貝殻が通貨として使われていました。" },
+              { text: "金貨", isCorrect: false },
+            ],
+            hint: "海辺のものを使っていました。",
+          },
+          {
+            questionNumber: 3,
+            question: "「カミカゼ」の本来の意味は？",
+            options: [
+              { text: "神風", isCorrect: true, rationale: "元々はモンゴル軍を撃退した台風を指す言葉でした。" },
+              { text: "自爆攻撃", isCorrect: false },
+              { text: "嵐", isCorrect: false },
+              { text: "神の怒り", isCorrect: false },
+            ],
+            hint: "神に関連する風です。",
+          },
+          {
+            questionNumber: 4,
+            question: "「アレキサンドリア図書館」は何年に焼失した？",
+            options: [
+              { text: "48年", isCorrect: false },
+              { text: "642年", isCorrect: true, rationale: "イスラム軍による征服時に焼失しました。" },
+              { text: "1000年", isCorrect: false },
+              { text: "1500年", isCorrect: false },
+            ],
+            hint: "イスラム教徒による征服の際です。",
+          },
+          {
+            questionNumber: 5,
+            question: "「プラシーボ効果」の意味は？",
+            options: [
+              { text: "偽薬による効果", isCorrect: true, rationale: "効果のない薬でも、信じて服用することで効果が出る心理現象です。" },
+              { text: "薬の副作用", isCorrect: false },
+              { text: "免疫力の向上", isCorrect: false },
+              { text: "遺伝子変異", isCorrect: false },
+            ],
+            hint: "心理的な効果です。",
+          },
+        ],
+      },
+    ],
+  },
 ];
