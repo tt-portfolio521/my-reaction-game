@@ -155,6 +155,18 @@ export default function Home() {
               </div>
             </Link>
 
+            {/* 体内時計10秒チャレンジ (今回追加) */}
+            <Link href="/body-clock" className="group">
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 h-full border border-slate-100 hover:border-purple-500 flex flex-col">
+                <div className="text-4xl mb-4 bg-purple-50 w-fit p-3 rounded-xl">⏰</div>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-purple-600">体内時計10秒チャレンジ</h3>
+                <p className="text-slate-500 text-sm mb-4 flex-grow">
+                  あなたの時間感覚をテスト。頭の中で10秒を数えて正確さを競おう！
+                </p>
+                <span className="text-purple-600 font-bold text-sm text-right">チャレンジする →</span>
+              </div>
+            </Link>
+
           </div>
         </section>
 
